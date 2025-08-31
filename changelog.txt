@@ -1,0 +1,15 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 8 / 30 / 2025
+
+  Bugfixes:
+    - Fixed a crash on start up when using a mod that defines a plant prototype without an order
+    - Fixed an issue with plants that have multiple mining results (I got lucky during initial testing so this was an unnoticed issue)
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 8 / 29 / 2025
+
+  Major Features:
+    - All plant prototypes can now be planted from quality seeds
+    - Quality plants have increased health, spores released, and growing time.
