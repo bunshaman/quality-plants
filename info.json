@@ -7,7 +7,7 @@
   "author": "Bunshaman",
   "homepage": "https://mods.factorio.com/user/bunshaman",
   "contact": "bunshaman on discord",
-  "dependencies": ["base >= 2.0.0",
+  "dependencies": ["base >= 2.0.61",
     "quality",
     "space-age",
     "(?) infinite-quality-tiers",
