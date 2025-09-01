@@ -109,12 +109,6 @@ function generate_plant(prototype, quality_color, quality_name, quality_increase
     plant_prototype.max_health = if_mod_setting("max_health", scale_existing_target(plant_prototype.max_health, quality_increase)) or plant_prototype.max_health
     plant_prototype.autoplace = nil
     plant_prototype.minable = update_mining_results(plant_prototype.minable, quality_name)
-    --if plant_prototype.minable.results then
-    --    for i, result in pairs(plant_prototype.minable.results) do
-    --        plant_prototype.minable.results[i].name = quality_name.."-"..result.name
-    --    end
-    --end
-
     return plant_prototype
 end
 
