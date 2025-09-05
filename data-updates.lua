@@ -143,7 +143,7 @@ function generate_plant_products(prototype, quality_color, quality_name, quality
                     source_effects = {
                         {
                             type = "script",
-                            effect_id = "{quality = "..quality_name..", item = "..product_prototype.name.."}"
+                            effect_id = "{quality = "..quality_name..", item = "..product_prototype.name.."}QUALITYPLANTS"
                         }
                     }
                     }

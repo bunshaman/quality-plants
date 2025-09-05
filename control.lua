@@ -1,41 +1,42 @@
 --Register replace item on spoil event
 script.on_event("on_script_trigger_effect", function(event)
-	if not event.effect_id then return end
+	if event.effect_id and string.find(event.effect_id, "QUALITYPLANTS", 1, true) then
 
-	--local target_quality, target_item = event.effect_id:match("([^%-]+)%-(.+)") -- Matches "quality-item"		-- If a quality name has several hyphens, it goofs
-	local target_quality, target_item = event.effect_id:match("{%s*quality%s*=%s*([^,]+),%s*item%s*=%s*([^}]+)}")
+		--local target_quality, target_item = event.effect_id:match("([^%-]+)%-(.+)") -- Matches "quality-item"		-- If a quality name has several hyphens, it goofs
+		local target_quality, target_item = event.effect_id:match("{%s*quality%s*=%s*([^,]+),%s*item%s*=%s*([^}]+)}QUALITYPLANTS$")
 
-	local entity = event.target_entity
-	local item = {name=target_item, quality = target_quality}
+		local entity = event.target_entity
+		local item = {name=target_item, quality = target_quality}
 
-	--Handle missing entity / item on ground by spawning the item on the ground
-	if entity == nil then 
-		if (game.players[1].position.x == event.target_position.x) and (game.players[1].position.y == event.target_position.y) then
-			game.players[1].get_main_inventory().insert(item)
-		else
-			game.surfaces[event.surface_index].spill_item_stack{position = event.target_position, stack = item}
-			return
-		end
-	else
-		--Check how the item was removed from the machine
-		if entity.type == "inserter" then
-			--why doesn't .insert() work with inserters???????
-			item.count = entity.held_stack.count + 1
-			entity.held_stack.set_stack(item)
-		elseif entity.type == "loader" then
-			--gotta check both or else the items get eaten
-			if entity.get_transport_line(1).can_insert_at_back() then
-				entity.get_transport_line(1).insert_at_back(item)
+		--Handle missing entity / item on ground by spawning the item on the ground
+		if entity == nil then 
+			if (game.players[1].position.x == event.target_position.x) and (game.players[1].position.y == event.target_position.y) then
+				game.players[1].get_main_inventory().insert(item)
 			else
-				entity.get_transport_line(2).insert_at_back(item)
+				game.surfaces[event.surface_index].spill_item_stack{position = event.target_position, stack = item}
+				return
 			end
-		elseif entity.type == "construction-robot" then
-			entity.get_inventory(defines.inventory.robot_cargo).insert(item)
-		elseif entity.type == "character" or entity.type == "container" then
-			--so simple i love it
-			entity.insert(item)
-		elseif entity.type == "agricultural-tower" or entity.type == "assembling-machine" then
-			entity.get_output_inventory().insert(item)
+		else
+			--Check how the item was removed from the machine
+			if entity.type == "inserter" then
+				--why doesn't .insert() work with inserters???????
+				item.count = entity.held_stack.count + 1
+				entity.held_stack.set_stack(item)
+			elseif entity.type == "loader" then
+				--gotta check both or else the items get eaten
+				if entity.get_transport_line(1).can_insert_at_back() then
+					entity.get_transport_line(1).insert_at_back(item)
+				else
+					entity.get_transport_line(2).insert_at_back(item)
+				end
+			elseif entity.type == "construction-robot" then
+				entity.get_inventory(defines.inventory.robot_cargo).insert(item)
+			elseif entity.type == "character" or entity.type == "container" then
+				--so simple i love it
+				entity.insert(item)
+			elseif entity.type == "agricultural-tower" or entity.type == "assembling-machine" then
+				entity.get_output_inventory().insert(item)
+			end
 		end
 	end
 end)

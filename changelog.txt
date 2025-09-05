@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.4
+Date: 9 / 5 / 2025
+
+  Bugfixes:
+    - Fixed a runtime crash regarding other mods triggering on_script_trigger_events
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.3
 Date: 9 / 1 / 2025
 
@@ -10,7 +17,7 @@ Version: 1.0.2
 Date: 8 / 31 / 2025
 
   Bugfixes:
-    - Hopefully fixed a strange start up crash that I cannot replicate for the life of me????
+    - Hopefully fixed a strange start up crash that I cannot replicate for the life of me???? (lol 1.0.3)
 
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.1
