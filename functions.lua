@@ -81,7 +81,7 @@ function Functions.update_mining_results(minable, quality_name)
 end
 
 ---@param plant LuaEntity
----@param quality LuaQuality
+---@param quality data.QualityPrototype
 function Functions.draw_quality_sprite(plant, quality)
     local bb = plant.bounding_box
     local height = (bb.right_bottom.y - bb.left_top.y) / 2
@@ -95,6 +95,33 @@ function Functions.draw_quality_sprite(plant, quality)
 		render_layer = "entity-info-icon",
 	}
 	local render = rendering.draw_sprite(info)
+end
+
+
+---@param plant_prototype data.PlantPrototype
+---@param quality_color { r: number, g: number, b: number }
+function Functions.tintPlantPrototype(plant_prototype, quality_color)
+    quality_color = {
+        r = quality_color.r or quality_color[1],
+        g = quality_color.g or quality_color[2],
+        b = quality_color.b or quality_color[3]
+    }
+    
+    if (quality_color.r > 1) and (quality_color.g > 1) and (quality_color.b > 1) then
+        quality_color.r = quality_color.r / 255
+        quality_color.g = quality_color.g / 255
+        quality_color.b = quality_color.b / 255
+    end
+
+    for i, table in pairs(plant_prototype.colors) do    -- this table could be empty
+        plant_prototype.colors[i] = {
+            r = (quality_color.r),
+            g = (quality_color.g),
+            b = (quality_color.b),
+        }
+    end
+
+    --plant_prototype.map_color = quality_color
 end
 
 

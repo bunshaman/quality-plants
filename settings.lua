@@ -17,5 +17,11 @@ data:extend{
         setting_type = "startup",
         default_value = true,
         order = "c"
+    }, {
+        type = "bool-setting",
+        name = "tint_plants",
+        setting_type = "startup",
+        default_value = false,
+        order = "d"
     }
 }

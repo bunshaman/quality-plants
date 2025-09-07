@@ -9,6 +9,11 @@ function if_mod_setting(mod_setting, execute) if settings.startup[mod_setting].v
 function generate_plant(prototype, quality_color, quality_name, quality_increase, quality_level)
     local plant_prototype = table.deepcopy(prototype)
 
+    if settings.startup["tint_plants"].value then
+        Functions.tintPlantPrototype(plant_prototype, quality_color)
+    end
+    quality_color = Functions.convert_to_hex(quality_color)
+
     plant_prototype.fast_replaceable_group = plant_prototype.name
     if plant_prototype.name == "tree-plant" then    -- Hardcoding a fix for wood trees...
         plant_prototype.localised_name = {"", "[color=" .. quality_color .. "]", { "entity-name.tree"}, " (", {"quality-name." .. quality_name }, ")", "[/color]"}
@@ -43,12 +48,13 @@ function generate_plant_products(prototype, quality_color, quality_name, quality
                 product_prototype = table.deepcopy(data.raw["capsule"][product.name]) or table.deepcopy(data.raw["tool"][product.name])
             end
 
+            quality_color = Functions.convert_to_hex(quality_color)
             product_prototype.localised_name = {"", "[color=" .. quality_color .. "]", { "item-name." .. product_prototype.name }, " (", {"quality-name." .. quality_name }, ")", "[/color]"}
 
             product_prototype.hidden = true
             product_prototype.hidden_in_factoriopedia = true
             product_prototype.subgroup = nil
-            product_prototype.order = product_prototype.order and ("z"..product_prototype.order..quality_level) or nil
+            product_prototype.order = product_prototype.order and (product_prototype.order..quality_level) or nil
             product_prototype.spoil_result = nil
             product_prototype.spoil_ticks = 1
             product_prototype.spoil_to_trigger_result =
@@ -90,14 +96,13 @@ end
 
 
 for _, quality in pairs(quality_tiers) do
-    local quality_color = Functions.convert_to_hex(quality.color)
     local quality_name = quality.name
     local quality_increase = 1 + 0.3 * quality.level
 
     -- Generate the plant and product prototypes
     for _, plant in pairs(plants) do
-        local plant_prototype = generate_plant(plant, quality_color, quality_name, quality_increase, quality.level)
-        local product_prototypes = generate_plant_products(plant, quality_color, quality_name, quality_increase, quality.level)
+        local plant_prototype = generate_plant(plant, quality.color, quality_name, quality_increase, quality.level)
+        local product_prototypes = generate_plant_products(plant, quality.color, quality_name, quality_increase, quality.level)
         if product_prototypes then 
             for i, product_prototype in pairs(product_prototypes) do
                 Functions.place_icon_on_item(product_prototype, quality_name)
@@ -108,7 +113,5 @@ for _, quality in pairs(quality_tiers) do
         data:extend{plant_prototype}
     end
 end
-
-
 
 --data.raw["tile"]["empty-space"].collision_mask.layers = {["ground_tile"] = true}      -- for thumbnail
