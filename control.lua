@@ -1,3 +1,6 @@
+require("mod-compat.control")
+local Functions = require("functions")
+
 --Register replace item on spoil event
 script.on_event("on_script_trigger_effect", function(event)
 	if event.effect_id and string.find(event.effect_id, "QUALITYPLANTS", 1, true) then
@@ -42,25 +45,13 @@ script.on_event("on_script_trigger_effect", function(event)
 end)
 
 
-function draw_quality_sprite(plant, quality)
-    local bb = plant.bounding_box
-    local height = (bb.right_bottom.y - bb.left_top.y) / 2
-	local width = (bb.right_bottom.x - bb.left_top.x) / 2
-	local info = {
-		sprite = "quality."..quality,
-		target = {entity = plant, offset = {-width * 0.8, height * 0.8}},
-		surface = plant.surface,
-		x_scale = 0.5,
-		y_scale = 0.5,
-		render_layer = "entity-info-icon",
-	}
-	local render = rendering.draw_sprite(info)
-end
+
 
 -- Called when a tower plants a seed
 function EVENT_on_tower_planted_seed(event)
 	if type(event) == "table" and event.name == 207 then
 		local plant = event.plant
+		--game.print("ag tower placed a "..plant.name)
 		if event.seed.quality.name ~= "normal" then
 			--game.print("Seed planted: "..event.seed.quality.name.."-"..event.seed.name.name)
 			--local position = {["y"] = math.floor(plant.position.y or plant.position[1]), ["x"] = math.floor(plant.position.x or plant.position[2])}
@@ -72,7 +63,8 @@ function EVENT_on_tower_planted_seed(event)
 				snap_to_grid = false,
 				spill=false
 			}
-			draw_quality_sprite(new_plant, event.seed.quality.name)
+			Functions.draw_quality_sprite(new_plant, event.seed.quality.name)
+			--game.print("new plant placed: "..new_plant.name)
 		end
 	end
 end
@@ -94,7 +86,7 @@ function EVENT_on_built_entity(event)
 				snap_to_grid = false,
 				spill=false
 			}
-			draw_quality_sprite(new_plant, seed.quality.name)
+			Functions.draw_quality_sprite(new_plant, seed.quality.name)
 		end
 	end
 end

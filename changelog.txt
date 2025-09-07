@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.5
+Date: 9 / 6 / 2025
+  Changes:
+    - Added partial mod support for Combo Technology mod by supremecool. Better support to possibly come at a later date, but now it no longer crashes
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 9 / 5 / 2025
 
