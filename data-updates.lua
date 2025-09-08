@@ -42,14 +42,14 @@ function generate_plant_products(prototype, quality_color, quality_name, quality
     if prototype.minable then -- why run this whole thing if no mining results?
         local products = prototype.minable.results
         local product_prototypes = {}
+        local hex_quality_color = Functions.convert_to_hex(quality_color)
         for i, product in pairs(products) do
             local product_prototype = table.deepcopy(data.raw[product.type][product.name])
             if product_prototype == nil then    -- weird thing with item types. Possibly do better in the future
                 product_prototype = table.deepcopy(data.raw["capsule"][product.name]) or table.deepcopy(data.raw["tool"][product.name])
             end
 
-            quality_color = Functions.convert_to_hex(quality_color)
-            product_prototype.localised_name = {"", "[color=" .. quality_color .. "]", { "item-name." .. product_prototype.name }, " (", {"quality-name." .. quality_name }, ")", "[/color]"}
+            product_prototype.localised_name = {"", "[color=" .. hex_quality_color .. "]", { "item-name." .. product_prototype.name }, " (", {"quality-name." .. quality_name }, ")", "[/color]"}
 
             product_prototype.hidden = true
             product_prototype.hidden_in_factoriopedia = true
