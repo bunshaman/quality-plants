@@ -49,23 +49,21 @@ end)
 
 -- Called when a tower plants a seed
 function EVENT_on_tower_planted_seed(event)
-	if type(event) == "table" and event.name == 207 then
-		local plant = event.plant
-		--game.print("ag tower placed a "..plant.name)
-		if event.seed.quality.name ~= "normal" then
-			--game.print("Seed planted: "..event.seed.quality.name.."-"..event.seed.name.name)
-			--local position = {["y"] = math.floor(plant.position.y or plant.position[1]), ["x"] = math.floor(plant.position.x or plant.position[2])}
-			local new_plant = plant.surface.create_entity{
-				name = event.seed.quality.name.."-"..plant.name,
-				position = plant.position,
-				force = plant.force,
-				fast_replace = true,
-				snap_to_grid = false,
-				spill=false
-			}
-			Functions.draw_quality_sprite(new_plant, event.seed.quality.name)
-			--game.print("new plant placed: "..new_plant.name)
-		end
+	local plant = event.plant
+	--game.print("ag tower placed a "..plant.name)
+	if event.seed.quality.name ~= "normal" then
+		--game.print("Seed planted: "..event.seed.quality.name.."-"..event.seed.name.name)
+		--local position = {["y"] = math.floor(plant.position.y or plant.position[1]), ["x"] = math.floor(plant.position.x or plant.position[2])}
+		local new_plant = plant.surface.create_entity{
+			name = event.seed.quality.name.."-"..plant.name,
+			position = plant.position,
+			force = plant.force,
+			fast_replace = true,
+			snap_to_grid = false,
+			spill=false
+		}
+		Functions.draw_quality_sprite(new_plant, event.seed.quality.name)
+		--game.print("new plant placed: "..new_plant.name)
 	end
 end
 
