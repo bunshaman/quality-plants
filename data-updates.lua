@@ -44,6 +44,8 @@ function generate_plant_products(prototype, quality_color, quality_name, quality
         local product_prototypes = {}
         local hex_quality_color = Functions.convert_to_hex(quality_color)
         for i, product in pairs(products) do
+            if product.type == "fluid" then goto continue end
+            
             local product_prototype = table.deepcopy(data.raw[product.type][product.name])
             if product_prototype == nil then    -- weird thing with item types. Possibly do better in the future
                 product_prototype = table.deepcopy(data.raw["capsule"][product.name]) or table.deepcopy(data.raw["tool"][product.name])
@@ -76,6 +78,8 @@ function generate_plant_products(prototype, quality_color, quality_name, quality
             product_prototype.name = quality_name.."-"..product_prototype.name
 
             table.insert(product_prototypes, product_prototype)
+
+            ::continue::
         end
         return product_prototypes
     end
