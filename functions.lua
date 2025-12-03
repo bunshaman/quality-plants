@@ -74,7 +74,9 @@ function Functions.update_mining_results(minable, quality_name)
     end
     if minable.results then
         for i, result in pairs(minable.results) do
-            minable.results[i].name = quality_name.."-"..result.name
+		    if result.type ~= "fluid" then
+                minable.results[i].name = quality_name.."-"..result.name
+			end
         end
     end
     return minable
