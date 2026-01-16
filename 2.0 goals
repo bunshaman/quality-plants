@@ -1,0 +1,3 @@
+- Keep prototypes as they allow for more quality control
+- Rather than doing spoil triggers, store the trees and replace all items harvested as they are harvested
+    - Utilize register_on_object_destroyed for this

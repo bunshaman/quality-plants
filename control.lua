@@ -1,13 +1,56 @@
-require("mod-compat.control")
-local Functions = require("functions")
+---@param plant LuaEntity?
+---@param quality string
+function draw_quality_sprite(plant, quality)
+	if plant == nil then log("Error drawing quality sprite. Plant was considered nil") return end
+    local bb = plant.bounding_box
+    local height = (bb.right_bottom.y - bb.left_top.y) / 2
+	local width = (bb.right_bottom.x - bb.left_top.x) / 2
+	local info = {
+		sprite = "quality."..quality,
+		target = {entity = plant, offset = {-width * 0.8, height * 0.8}},
+		surface = plant.surface,
+		x_scale = 0.5,
+		y_scale = 0.5,
+		render_layer = "entity-info-icon",
+	}
+	local render = rendering.draw_sprite(info)
+	return render
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Called when a plant is planted
+--- @param event EventData|EventData.on_tower_planted_seed|EventData.on_built_entity|EventData.on_robot_built_entity|EventData.on_space_platform_built_entity
+function on_planted(event)
+	local plant = event.entity or event.plant
+	local quality = ""
+	if event.name == 6 then
+		quality = event.consumed_items.get_contents()[1].quality
+	else
+		quality = event.seed.quality.name or event.stack.quality.name
+	end
+	if plant == nil or plant.valid == false or plant.type ~= "plant" or quality == nil then log("Error planting a quality plant. Plant was invalid, not a plant, or had no quality.") return end
+	if quality == "normal" then return end
+	game.print("Planted a "..quality.." "..plant.name)
+
+	local newPlant = plant.surface.create_entity{
+		name = quality.."-QP-"..plant.name,
+		position = plant.position,
+		force = plant.force,
+		fast_replace = true,
+		snap_to_grid = false,
+		spill=false
+	}
+
+	draw_quality_sprite(newPlant, quality)
+end
+
 
 --Register replace item on spoil event
 script.on_event("on_script_trigger_effect", function(event)
 	if event.effect_id and string.find(event.effect_id, "QUALITYPLANTS", 1, true) then
-
-		--local target_quality, target_item = event.effect_id:match("([^%-]+)%-(.+)") -- Matches "quality-item"		-- If a quality name has several hyphens, it goofs
 		local target_quality, target_item = event.effect_id:match("{%s*quality%s*=%s*([^,]+),%s*item%s*=%s*([^}]+)}QUALITYPLANTS$")
-
 		local entity = event.target_entity
 		local item = {name=target_item, quality = target_quality}
 
@@ -45,51 +88,7 @@ script.on_event("on_script_trigger_effect", function(event)
 end)
 
 
-
-
--- Called when a tower plants a seed
-function EVENT_on_tower_planted_seed(event)
-	if type(event) == "table" and event.name == 207 then
-		local plant = event.plant
-		--game.print("ag tower placed a "..plant.name)
-		if event.seed.quality.name ~= "normal" then
-			--game.print("Seed planted: "..event.seed.quality.name.."-"..event.seed.name.name)
-			--local position = {["y"] = math.floor(plant.position.y or plant.position[1]), ["x"] = math.floor(plant.position.x or plant.position[2])}
-			local new_plant = plant.surface.create_entity{
-				name = event.seed.quality.name.."-"..plant.name,
-				position = plant.position,
-				force = plant.force,
-				fast_replace = true,
-				snap_to_grid = false,
-				spill=false
-			}
-			Functions.draw_quality_sprite(new_plant, event.seed.quality.name)
-			--game.print("new plant placed: "..new_plant.name)
-		end
-	end
-end
-
--- When player builds plant
-function EVENT_on_built_entity(event)
-	if type(event) == "table" and event.name == 6 then
-		if event.entity.type == "plant" and event.consumed_items[1].quality.name ~= "normal" then
-			--game.print(event.consumed_items[1].name)
-
-			local plant = event.entity
-			local seed = event.consumed_items[1]
-			--game.print("Seed planted: "..seed.quality.name.."-"..seed.name)
-			local new_plant = plant.surface.create_entity{
-				name = seed.quality.name.."-"..plant.name,
-				position = plant.position,
-				force = plant.force,
-				fast_replace = true,
-				snap_to_grid = false,
-				spill=false
-			}
-			Functions.draw_quality_sprite(new_plant, seed.quality.name)
-		end
-	end
-end
-
-script.on_event(defines.events.on_tower_planted_seed, EVENT_on_tower_planted_seed)
-script.on_event(defines.events.on_built_entity, EVENT_on_built_entity)
+script.on_event(defines.events.on_tower_planted_seed, 				on_planted)
+script.on_event(defines.events.on_built_entity,                 	on_planted, {{filter = "type", type = "plant"}})
+script.on_event(defines.events.on_robot_built_entity,           	on_planted, {{filter = "type", type = "plant"}})
+script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{filter = "type", type = "plant"}})
