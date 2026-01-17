@@ -158,9 +158,13 @@ function util.generate_plant(plant, quality)
     if newPlant.name == "tree-plant" then    -- Hardcoding a fix for wood trees...
         newPlant.localised_name = {"", "[color=" .. quality_color .. "]", { "entity-name.tree"}, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
     else
-        newPlant.localised_name = {"", "[color=" .. quality_color .. "]", { "entity-name." .. newPlant.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
+        if newPlant.localised_name and newPlant.localised_name[1] then
+            newPlant.localised_name = {"", "[color=" .. quality_color .. "]", { newPlant.localised_name[1] }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
+        else
+            newPlant.localised_name = {"", "[color=" .. quality_color .. "]", { "entity-name." .. newPlant.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
+        end
     end
-    newPlant.localised_description = {"entity-description."..newPlant.name}
+    newPlant.localised_description = newPlant.localised_description and newPlant.localised_description[1] or {"entity-description."..newPlant.name}
     newPlant.name = quality.name.."-"..newPlant.name
 
     -- Attributes
