@@ -44,6 +44,7 @@ end
 --- @param event EventData|EventData.on_tower_planted_seed|EventData.on_built_entity|EventData.on_robot_built_entity|EventData.on_space_platform_built_entity
 function on_planted(event)
 	local plant = event.entity or event.plant
+	local seed = event.seed.name or event.stack.name or event.consumed_items.get_contents() and event.consumed_items.get_contents()[1]
 	local quality = ""
 	if event.name == 6 then
 		quality = event.consumed_items.get_contents()[1].quality
@@ -51,19 +52,20 @@ function on_planted(event)
 		quality = event.seed.quality.name or event.stack.quality.name
 	end
 	if plant == nil or plant.valid == false or plant.type ~= "plant" or quality == nil then log("Error planting a quality plant. Plant was invalid, not a plant, or had no quality.") return end
-	if quality == "normal" then return end
-	game.print("Planted a "..quality.." "..plant.name)
+	if quality ~= "normal" or seed.name == "seed-crystal" then
+		--game.print("Planted a "..quality.." "..plant.name)
 
-	local newPlant = plant.surface.create_entity{
-		name = quality.."-QP-"..plant.name,
-		position = plant.position,
-		force = plant.force,
-		fast_replace = true,
-		snap_to_grid = false,
-		spill=false
-	}
-
-	draw_quality_sprite(newPlant, quality)
+		local newPlant = plant.surface.create_entity{
+			name = quality.."-"..plant.name,
+			position = plant.position,
+			force = plant.force,
+			fast_replace = true,
+			snap_to_grid = false,
+			spill=false
+		}
+		plant.destroy()
+		draw_quality_sprite(newPlant, quality)
+	end
 end
 
 

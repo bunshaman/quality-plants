@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 1 / 17 / 2026
+  Changes:
+    - Rewrote most of the mod
+    - Removed tinting as it doesn't work as well as I hoped.
+    - Tweaked the thumbnail
+  Bugfixes:
+    - Plants that yield fluids will no longer produce quality fluids.
+---------------------------------------------------------------------------------------------------
 Version: 1.0.7
 Date: 9 / 7 / 2025
   Changes:
