@@ -152,7 +152,7 @@ function generate_plant(plant, quality)
     newPlant.hidden = true
     newPlant.hidden_in_factoriopedia = true
     newPlant.fast_replaceable_group = newPlant.name
-    newPlant.autoplace = nil
+    newPlant.autoplace = {probability_expression = 0}
 
     -- Name and description
     if newPlant.name == "tree-plant" then    -- Hardcoding a fix for wood trees...

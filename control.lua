@@ -17,6 +17,26 @@ function draw_quality_sprite(plant, quality)
 	return render
 end
 
+
+--- ABANDONED unless there exists a way to get the mouse cursor position.
+--- Draws a quality sprite upon the cursor when planting quality seeds manually
+--- @param player LuaPlayer
+--function draw_quality_on_mouse(player)
+--	if not (player and player.valid == true) then return end
+--	local cursor_stack = player.cursor_stack
+--	if cursor_stack == nil or cursor_stack.valid == false then return end
+--
+--	if cursor_stack.valid_for_read then
+--		local x = prototypes.item[cursor_stack.name].place_result.type
+--		if not (prototypes.item[cursor_stack.name].place_result.type == "plant") then return end
+--		rendering.draw_sprite{sprite = "quality."..cursor_stack.quality.name, target = player.hand_location, surface = player.physical_surface, x_scale = 0.5, y_scale = 0.5, time_to_live = 60}
+--		game.print(player.cursor_stack)
+--	else
+--		-- delete rendering object.
+--	end
+--end
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
