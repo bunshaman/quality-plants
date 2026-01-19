@@ -30,8 +30,8 @@ data:extend{
     }, {
         name = "draw_quality_sprite",
         type = "bool-setting",
-        default_value = false,
-        setting_type = "runtime",
+        default_value = true,
+        setting_type = "runtime-global",
         order = "ba"
     }, {
         name = "tint_plants",

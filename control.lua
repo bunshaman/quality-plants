@@ -1,3 +1,5 @@
+local func = require("functions")
+
 ---@param plant LuaEntity?
 ---@param quality string
 function draw_quality_sprite(plant, quality)
@@ -54,11 +56,13 @@ function on_planted(event)
 			spill=false
 		}
 		plant.destroy()
+		if newPlant == nil then return end
 
 		-- Draw quality sprites 
-		if settings.runtime["draw_quality_sprite"].value then
-			if (settings.startup["tint_plants"].value == "sometimes") and ((quality.."-yumako-tree" == newPlant.name) or (quality.."-jellystem" == newPlant.name) or (quality.."-tree-plant" == newPlant.name)) then return end
-			draw_quality_sprite(newPlant, quality)
+		if settings.global["draw_quality_sprite"].value then
+			if func.tintable(quality, newPlant.name) then
+				draw_quality_sprite(newPlant, quality)
+			end
 		end
 	end
 end

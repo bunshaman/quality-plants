@@ -1,4 +1,4 @@
-local util = {}
+local func = {}
 
 local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
@@ -6,13 +6,13 @@ local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"
 --- Returns execute if a startup mod setting is set to true
 --- @param mod_setting string
 --- @param execute any
-function util.if_mod_setting(mod_setting, execute) if settings.startup[mod_setting].value then return execute else return nil end end
+function func.if_mod_setting(mod_setting, execute) if settings.startup[mod_setting].value then return execute else return nil end end
 
 
 --- @param variable number|table
 --- @param quality_increase number
 --- @return any
-function util.mutiply_table(variable, quality_increase)
+function func.mutiply_table(variable, quality_increase)
     if variable ~= nil then
         if type(variable) == "table" then
             for i, j in pairs(variable) do
@@ -31,7 +31,7 @@ end
 --- Converts an rgb table into a hex number
 --- @param rgb {r: number, g: number, b: number}|{[1]: number, [2]: number, [3]: number}  -- table with red, green, blue values
 --- @return string   
-function util.rgb_to_hex(rgb)
+function func.rgb_to_hex(rgb)
     rgb = {rgb[1] or rgb.r, rgb[2] or rgb.g, rgb[3] or rgb.b}
     local hex = ""
     if (rgb[1] <= 1) and (rgb[2] <= 1) and (rgb[3] <= 1) then  -- If all numbers are between 0 and 1, the game treats the values differently
@@ -57,7 +57,7 @@ end
 --- Tints a plant prototypes leaves if the setting is enabled. Hardcoded for specific plants.
 --- @param plant data.PlantPrototype
 --- @param quality data.QualityPrototype
-function util.tint_plant(plant, quality)
+function func.tint_plant(plant, quality)
     if (quality.name.."-yumako-tree" == plant.name) or (quality.name.."-jellystem" == plant.name) or (quality.name.."-tree-plant" == plant.name) then
         local quality_color = {
             r = quality.color.r or quality.color[1],
@@ -97,7 +97,7 @@ end
 --- Adds quality icons to an item prototype
 --- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
 --- @param qualityPrototype data.QualityPrototype
-function util.insert_quality_icons(itemPrototype, qualityPrototype)
+function func.insert_quality_icons(itemPrototype, qualityPrototype)
     if qualityPrototype.icons then
         for _, icon in pairs(qualityPrototype.icons) do
 		    table.insert(itemPrototype.icons, { icon = icon.icon, tint = icon.tint, icon_size = icon.icon_size, scale = 0.25, shift = { -10, 10 }})
@@ -111,13 +111,13 @@ end
 --- Adds quality icons to an item prototype
 --- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
 --- @param qualityPrototype data.QualityPrototype
-function util.place_icon_on_item(itemPrototype, qualityPrototype)
+function func.place_icon_on_item(itemPrototype, qualityPrototype)
     local icons = {}
 	if itemPrototype.icons then
-        icons = util.insert_quality_icons(itemPrototype, qualityPrototype)
+        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
 	else
 		itemPrototype.icons = {{ icon = itemPrototype.icon, icon_size = itemPrototype.icon_size }}
-        icons = util.insert_quality_icons(itemPrototype, qualityPrototype)
+        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
 		itemPrototype.icon = nil
 	end
     return icons
@@ -127,7 +127,7 @@ end
 --- Generates the item prototype
 --- @param name any
 --- @param quality any
-function util.createMiningResult(name, quality)
+function func.createMiningResult(name, quality)
     local newResult = table.deepcopy(data.raw["item"][name] or data.raw["capsule"][name] or data.raw["tool"][name])
     if newResult == nil then log("Error: mining result has a type that is not item, capsule, or tool. Please report to mod author with information about: Plants mined, mods used, and what the mining result is supposed to be.") return end
 
@@ -136,7 +136,7 @@ function util.createMiningResult(name, quality)
     newResult.hidden = true
     newResult.hidden_in_factoriopedia = true
 
-    newResult.localised_name = {"", "[color=" .. util.rgb_to_hex(quality.color) .. "]", { "item-name." .. newResult.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
+    newResult.localised_name = {"", "[color=" .. func.rgb_to_hex(quality.color) .. "]", { "item-name." .. newResult.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
     newResult.spoil_result = nil
     newResult.spoil_ticks = 1
     newResult.spoil_to_trigger_result = {
@@ -156,7 +156,7 @@ function util.createMiningResult(name, quality)
     }
 
     newResult.name = quality.name.."-"..newResult.name
-    newResult.icons = util.place_icon_on_item(newResult, quality)
+    newResult.icons = func.place_icon_on_item(newResult, quality)
 
     data:extend({newResult})
 end
@@ -165,17 +165,17 @@ end
 --- @param plant data.PlantPrototype
 --- @param quality data.QualityPrototype
 --- @return table|nil|string
-function util.updateMiningResults(plant, quality)
+function func.updateMiningResults(plant, quality)
     local minable = plant.minable
     if minable == nil then return end
 
     if minable.result then
-        util.createMiningResult(minable.result, quality)
+        func.createMiningResult(minable.result, quality)
         minable.result = quality.name.."-"..minable.result
     else
         for index, result in pairs(minable.results) do
             if result.type == "item" then
-                util.createMiningResult(result.name, quality)
+                func.createMiningResult(result.name, quality)
                 minable.results[index].name = quality.name.."-"..result.name
             end
         end
@@ -189,9 +189,9 @@ end
 --- @param plant data.PlantPrototype
 --- @param quality data.QualityPrototype
 --- @return data.PlantPrototype
-function util.generate_plant(plant, quality)
+function func.generate_plant(plant, quality)
     local newPlant = table.deepcopy(plant)
-    local quality_color = util.rgb_to_hex(quality.color)
+    local quality_color = func.rgb_to_hex(quality.color)
     local quality_multiplier = 1 + quality.level * 0.3
 
     -- Hidden
@@ -215,16 +215,33 @@ function util.generate_plant(plant, quality)
 
     -- Attributes
     newPlant.order = newPlant.order and (newPlant.order..quality.level) or nil
-    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = util.mutiply_table(newPlant.max_health, settings.startup["max_health"].value) end
+    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = func.mutiply_table(newPlant.max_health, settings.startup["max_health"].value) end
     if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * settings.startup["growth_ticks"].value end
-    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = util.mutiply_table(newPlant.harvest_emissions, settings.startup["harvest_emissions"].value ^ 2) end
-    if settings.startup["emmisions_per_second"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = util.mutiply_table(newPlant.harvest_emissions, settings.startup["emmisions_per_second"].value) end
+    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, settings.startup["harvest_emissions"].value ^ 2) end
+    if settings.startup["emmisions_per_second"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, settings.startup["emmisions_per_second"].value) end
 
     -- Mining Results
-    newPlant.minable = util.updateMiningResults(newPlant, quality)
+    newPlant.minable = func.updateMiningResults(newPlant, quality)
     return newPlant
 end
 
 
+--- Will return true if a quality plant can be tinted
+--- @param quality_name string
+--- @param plant_name string
+--- @return boolean
+function func.tintable(quality_name, plant_name)
+    if (settings.startup["tint_plants"].value == "sometimes") then
+        if (quality_name.."-yumako-tree" == plant_name) or
+            (quality_name.."-jellystem" == plant_name) or
+            (quality_name.."-tree-plant" == plant_name) 
+        then return false else return true end
+    else
+        return true
+    end
+end
 
-return util
+
+
+
+return func
