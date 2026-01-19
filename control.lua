@@ -2,7 +2,11 @@ local func = require("functions")
 
 ---@param plant LuaEntity?
 ---@param quality string
-function draw_quality_sprite(plant, quality)
+---@param render? boolean
+local function create_quality_sprite(plant, quality, render)
+	storage.plants = storage.plants or {}
+	storage.plants.render_to = storage.plants.render_to or {}
+	render = render or true
 	if plant == nil then log("Error drawing quality sprite. Plant was considered nil") return end
     local bb = plant.bounding_box
     local height = (bb.right_bottom.y - bb.left_top.y) / 2
@@ -14,7 +18,10 @@ function draw_quality_sprite(plant, quality)
 		x_scale = 0.5,
 		y_scale = 0.5,
 		render_layer = "entity-info-icon",
+		players = storage.plants.render_to,
+		visible = true
 	}
+	if next(info.players) == nil then info.visible = false end
 	local render = rendering.draw_sprite(info)
 	return render
 end
@@ -27,7 +34,7 @@ end
 
 --- Called when a plant is planted
 --- @param event EventData|EventData.on_tower_planted_seed|EventData.on_built_entity|EventData.on_robot_built_entity|EventData.on_space_platform_built_entity
-function on_planted(event)
+local function on_planted(event)
 	local plant = event.entity or event.plant
 	local seed = ""
 	if event.consumed_items then
@@ -58,13 +65,50 @@ function on_planted(event)
 		plant.destroy()
 		if newPlant == nil then return end
 
+		storage.plants = storage.plants or {}
+		storage.plants.render_to = storage.plants.render_to or {}
+
 		-- Draw quality sprites 
-		if settings.global["draw_quality_sprite"].value then
-			if func.tintable(quality, newPlant.name) then
-				draw_quality_sprite(newPlant, quality)
+		--if settings.global["draw_quality_sprite"].value == "sometimes" then
+			
+
+		--storage.plants = storage.plants or {}
+		--if func.tintable(quality, newPlant.name) then
+		--	storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
+		--else
+		--	storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
+		--end
+		storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
+	end
+end
+
+--- comment
+--- @param event EventData|EventData.on_runtime_mod_setting_changed
+local function runtime_setting_changed(event)
+	storage.plants = storage.plants or {}
+	storage.plants.render_to = storage.plants.render_to or {}
+
+	if event.setting == "draw_quality_sprite" then
+		local value = settings.get_player_settings(event.player_index)["draw_quality_sprite"].value
+		if value ~= "none" then
+			storage.plants.render_to[event.player_index] = event.player_index
+		else
+			for i, j in pairs(storage.plants.render_to) do
+				if j == event.player_index then storage.plants.render_to[i] = nil end
 			end
 		end
+
+		func.update_rendering(event.player_index)
 	end
+end
+
+
+local function on_object_destroyed(event)
+    local registration_number = event.registration_number
+    if storage.plants[registration_number] == nil then log("registration_number "..registration_number.." not found in storage.plants") return end
+
+	rendering.get_object_by_id(storage.plants[registration_number]).destroy()
+	storage.plants[registration_number] = nil
 end
 
 
@@ -113,3 +157,6 @@ script.on_event(defines.events.on_tower_planted_seed, 				on_planted)
 script.on_event(defines.events.on_built_entity,                 	on_planted, {{filter = "type", type = "plant"}})
 script.on_event(defines.events.on_robot_built_entity,           	on_planted, {{filter = "type", type = "plant"}})
 script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{filter = "type", type = "plant"}})
+
+script.on_event(defines.events.on_runtime_mod_setting_changed,		runtime_setting_changed)
+script.on_event(defines.events.on_object_destroyed, 				on_object_destroyed)

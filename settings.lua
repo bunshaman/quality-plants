@@ -29,19 +29,19 @@ data:extend{
         order = "ad"
     }, {
         name = "draw_quality_sprite",
-        type = "bool-setting",
-        default_value = true,
-        setting_type = "runtime-global",
-        order = "ba"
-    }, {
-        name = "tint_plants",
-        type = 'string-setting',
-        default_value = "none",
+        type = "string-setting",
+        default_value = "always",
         allowed_values = {
             "none",
             "sometimes",
-            "alwyays"
+            "always"
         },
+        setting_type = "runtime-per-user",
+        order = "ba"
+    }, {
+        name = "tint_plants",
+        type = 'bool-setting',
+        default_value = true,
         setting_type = "startup",
         order = "bb"
     }

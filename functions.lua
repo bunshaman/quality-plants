@@ -3,6 +3,7 @@ local func = {}
 local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
 
+
 --- Returns execute if a startup mod setting is set to true
 --- @param mod_setting string
 --- @param execute any
@@ -226,22 +227,52 @@ function func.generate_plant(plant, quality)
 end
 
 
---- Will return true if a quality plant can be tinted
---- @param quality_name string
+--- Will return true if a plant is able to be tinted.
 --- @param plant_name string
 --- @return boolean
-function func.tintable(quality_name, plant_name)
-    if (settings.startup["tint_plants"].value == "sometimes") then
-        if (quality_name.."-yumako-tree" == plant_name) or
-            (quality_name.."-jellystem" == plant_name) or
-            (quality_name.."-tree-plant" == plant_name) 
-        then return false else return true end
+function func.tintable(plant_name)
+    if settings.startup["tint_plants"].value then
+        for i, j in pairs(prototypes.quality) do
+            if  (i.."-yumako-tree" == plant_name) or (i.."-jellystem" == plant_name) or (i.."-tree-plant" == plant_name) then 
+                return true
+            end
+        end
+    end
+    return false
+end
+
+
+--- Updates the rendering of quality sprites for a player identified by their index.
+--- @param player_index integer
+function func.update_rendering(player_index)
+    storage.plants = storage.plants or {}
+    storage.plants.render_to = storage.plants.render_to or {}
+
+    local fullRender = settings.get_player_settings(player_index)["draw_quality_sprite"].value
+    if fullRender == "sometimes" then fullRender = false elseif fullRender == "always" then fullRender = true end
+
+    if next(storage.plants.render_to) == nil then
+        for i, j in pairs(storage.plants) do
+            if i ~= "render_to" then storage.plants[i].visible = false end
+        end
     else
-        return true
+        for i, j in pairs(storage.plants) do
+            if i ~= "render_to" then
+                if func.tintable(j.target.entity.name) and (fullRender == false) then
+                    storage.plants[i].players[player_index] = nil
+                    if next(storage.plants[i].players) == nil then storage.plants[i].visible = false end
+                else
+                    storage.plants[i].players = storage.plants.render_to
+                    storage.plants[i].visible = true
+                end
+            end
+        end
     end
 end
 
 
-
-
 return func
+
+
+
+--- Move render to into a different storage variable?
