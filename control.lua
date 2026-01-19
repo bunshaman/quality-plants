@@ -18,23 +18,6 @@ function draw_quality_sprite(plant, quality)
 end
 
 
---- ABANDONED unless there exists a way to get the mouse cursor position.
---- Draws a quality sprite upon the cursor when planting quality seeds manually
---- @param player LuaPlayer
---function draw_quality_on_mouse(player)
---	if not (player and player.valid == true) then return end
---	local cursor_stack = player.cursor_stack
---	if cursor_stack == nil or cursor_stack.valid == false then return end
---
---	if cursor_stack.valid_for_read then
---		local x = prototypes.item[cursor_stack.name].place_result.type
---		if not (prototypes.item[cursor_stack.name].place_result.type == "plant") then return end
---		rendering.draw_sprite{sprite = "quality."..cursor_stack.quality.name, target = player.hand_location, surface = player.physical_surface, x_scale = 0.5, y_scale = 0.5, time_to_live = 60}
---		game.print(player.cursor_stack)
---	else
---		-- delete rendering object.
---	end
---end
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -44,7 +27,14 @@ end
 --- @param event EventData|EventData.on_tower_planted_seed|EventData.on_built_entity|EventData.on_robot_built_entity|EventData.on_space_platform_built_entity
 function on_planted(event)
 	local plant = event.entity or event.plant
-	local seed = event.seed.name or event.stack.name or event.consumed_items.get_contents() and event.consumed_items.get_contents()[1]
+	local seed = ""
+	if event.consumed_items then
+		local consumed = event.consumed_items.get_contents()
+		seed = consumed[1]
+	else
+		seed = event.seed.name or event.stack.name
+	end
+	--local seed = event.seed.name or event.stack.name or (event.consumed_items.get_contents() and event.consumed_items.get_contents()[1])
 	local quality = ""
 	if event.name == 6 then
 		quality = event.consumed_items.get_contents()[1].quality
@@ -64,7 +54,12 @@ function on_planted(event)
 			spill=false
 		}
 		plant.destroy()
-		draw_quality_sprite(newPlant, quality)
+
+		-- Draw quality sprites 
+		if settings.runtime["draw_quality_sprite"].value then
+			if (settings.startup["tint_plants"].value == "sometimes") and ((quality.."-yumako-tree" == newPlant.name) or (quality.."-jellystem" == newPlant.name) or (quality.."-tree-plant" == newPlant.name)) then return end
+			draw_quality_sprite(newPlant, quality)
+		end
 	end
 end
 

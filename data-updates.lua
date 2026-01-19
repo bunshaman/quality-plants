@@ -21,6 +21,7 @@ for _, quality in pairs(data.raw["quality"]) do
         -- Generate the plant prototypes
         for _, plant in pairs(plants) do
             local new_plant = util.generate_plant(plant, quality)
+            if settings.startup["tint_plants"] ~= "none" then util.tint_plant(new_plant, quality) end
             data:extend{new_plant}
         end
     end

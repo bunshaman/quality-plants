@@ -1,5 +1,7 @@
 local util = {}
 
+local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+
 
 --- Returns execute if a startup mod setting is set to true
 --- @param mod_setting string
@@ -45,6 +47,50 @@ function util.rgb_to_hex(rgb)
         hex = hex .. hex_table[whole+1] .. hex_table[remainder*16 + 1]
     end
     return "#"..hex
+end
+
+
+
+
+
+
+--- Tints a plant prototypes leaves if the setting is enabled. Hardcoded for specific plants.
+--- @param plant data.PlantPrototype
+--- @param quality data.QualityPrototype
+function util.tint_plant(plant, quality)
+    if (quality.name.."-yumako-tree" == plant.name) or (quality.name.."-jellystem" == plant.name) or (quality.name.."-tree-plant" == plant.name) then
+        local quality_color = {
+            r = quality.color.r or quality.color[1],
+            g = quality.color.g or quality.color[2],
+            b = quality.color.b or quality.color[3]
+        }
+        
+        if (quality_color.r > 1) and (quality_color.g > 1) and (quality_color.b > 1) then
+            quality_color.r = quality_color.r / (255)
+            quality_color.g = quality_color.g / (255)
+            quality_color.b = quality_color.b / (255)
+        end
+
+        if plant.colors then
+            for i, table in pairs(plant.colors) do    -- this table could be empty
+                plant.colors[i] = {
+                    r = (quality_color.r),
+                    g = (quality_color.g),
+                    b = (quality_color.b),
+                }
+            end
+        end
+
+        for i, variation in pairs(plant.variations) do
+            if (quality.name.."-yumako-tree" == plant.name) then
+                variation.leaves.filename = "__quality-plants__/plant/yumako-tree-harvest.png"
+            elseif (quality.name.."-jellystem" == plant.name) then
+                variation.leaves.filename = "__quality-plants__/plant/jellystem-harvest.png"
+            elseif (quality.name.."-tree-plant" == plant.name) then
+                variation.leaves.filename = "__quality-plants__/plant/tree-plant/tree-08-"..letters[i].."-leaves.png"
+            end
+        end
+    end
 end
 
 
@@ -169,9 +215,10 @@ function util.generate_plant(plant, quality)
 
     -- Attributes
     newPlant.order = newPlant.order and (newPlant.order..quality.level) or nil
-    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = util.mutiply_table(newPlant.max_health, quality_multiplier) end
-    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * quality_multiplier end
-    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = util.mutiply_table(newPlant.harvest_emissions, quality_multiplier) end
+    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = util.mutiply_table(newPlant.max_health, settings.startup["max_health"].value) end
+    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * settings.startup["growth_ticks"].value end
+    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = util.mutiply_table(newPlant.harvest_emissions, settings.startup["harvest_emissions"].value ^ 2) end
+    if settings.startup["emmisions_per_second"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = util.mutiply_table(newPlant.harvest_emissions, settings.startup["emmisions_per_second"].value) end
 
     -- Mining Results
     newPlant.minable = util.updateMiningResults(newPlant, quality)
