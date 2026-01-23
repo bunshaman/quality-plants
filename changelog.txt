@@ -1,10 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
-Date: 1 / 17 / 2026
+Date: 1 / 22 / 2026
   Changes:
     - Readded tints but hardcoded for the three vanilla plants. Modded plants should add a greyscale version of their graphics to be modified for support.
     - Added more settings.
-    - Changed existing settings.
+    - Changed existing settings to offer more customization if wanted.
   Bugfixes:
     - Fixed some plants not getting correct names.
 ---------------------------------------------------------------------------------------------------

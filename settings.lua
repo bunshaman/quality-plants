@@ -2,28 +2,28 @@ data:extend{
     {
         name = "growth_ticks",
         type = 'double-setting',
-        default_value = 1.3,
+        default_value = 30,
         minimum_value = 0,
         setting_type = "startup",
         order = "aa",
     }, {
         name = "max_health",
         type = 'double-setting',
-        default_value = 1.3,
+        default_value = 30,
         minimum_value = 0,
         setting_type = "startup",
         order = "ab"
     }, {
         name = "harvest_emissions",
         type = 'double-setting',
-        default_value = 1.3,
+        default_value = 30,
         minimum_value = 0,
         setting_type = "startup",
         order = "ac"
     }, {
-        name = "emmisions_per_second",
+        name = "emissions_per_second",
         type = 'double-setting',
-        default_value = 1.3,
+        default_value = 30,
         minimum_value = 0,
         setting_type = "startup",
         order = "ad"

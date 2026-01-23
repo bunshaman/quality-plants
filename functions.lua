@@ -2,13 +2,9 @@ local func = {}
 
 local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
-
-
---- Returns execute if a startup mod setting is set to true
---- @param mod_setting string
---- @param execute any
-function func.if_mod_setting(mod_setting, execute) if settings.startup[mod_setting].value then return execute else return nil end end
-
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- Helpers
 
 --- @param variable number|table
 --- @param quality_increase number
@@ -52,8 +48,38 @@ end
 
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- Tinting and Sprites
 
+--- Adds quality icons to an item prototype
+--- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
+--- @param qualityPrototype data.QualityPrototype
+function func.insert_quality_icons(itemPrototype, qualityPrototype)
+    if qualityPrototype.icons then
+        for _, icon in pairs(qualityPrototype.icons) do
+		    table.insert(itemPrototype.icons, { icon = icon.icon, tint = icon.tint, icon_size = icon.icon_size, scale = 0.25, shift = { -10, 10 }})
+        end
+    else
+        table.insert(itemPrototype.icons, { icon = qualityPrototype.icon, icon_size = qualityPrototype.icon_size, scale = 0.25, shift = { -10, 10 }})
+    end
+    return itemPrototype.icons
+end
 
+--- Adds quality icons to an item prototype
+--- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
+--- @param qualityPrototype data.QualityPrototype
+function func.place_icon_on_item(itemPrototype, qualityPrototype)
+    local icons = {}
+	if itemPrototype.icons then
+        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
+	else
+		itemPrototype.icons = {{ icon = itemPrototype.icon, icon_size = itemPrototype.icon_size }}
+        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
+		itemPrototype.icon = nil
+	end
+    return icons
+end
 
 --- Tints a plant prototypes leaves if the setting is enabled. Hardcoded for specific plants.
 --- @param plant data.PlantPrototype
@@ -94,36 +120,70 @@ function func.tint_plant(plant, quality)
     end
 end
 
-
---- Adds quality icons to an item prototype
---- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
---- @param qualityPrototype data.QualityPrototype
-function func.insert_quality_icons(itemPrototype, qualityPrototype)
-    if qualityPrototype.icons then
-        for _, icon in pairs(qualityPrototype.icons) do
-		    table.insert(itemPrototype.icons, { icon = icon.icon, tint = icon.tint, icon_size = icon.icon_size, scale = 0.25, shift = { -10, 10 }})
-        end
-    else
-        table.insert(itemPrototype.icons, { icon = qualityPrototype.icon, icon_size = qualityPrototype.icon_size, scale = 0.25, shift = { -10, 10 }})
+--- Will return true if a plant is able to be tinted.
+--- @param plant_name string
+--- @return boolean
+function func.tintable(plant_name)
+    if settings.startup["tint_plants"].value == true then
+        if storage.tintable[plant_name] then return true end
     end
-    return itemPrototype.icons
+    return false
 end
 
---- Adds quality icons to an item prototype
---- @param itemPrototype data.ItemPrototype|data.CapsulePrototype|data.ToolPrototype
---- @param qualityPrototype data.QualityPrototype
-function func.place_icon_on_item(itemPrototype, qualityPrototype)
-    local icons = {}
-	if itemPrototype.icons then
-        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
-	else
-		itemPrototype.icons = {{ icon = itemPrototype.icon, icon_size = itemPrototype.icon_size }}
-        icons = func.insert_quality_icons(itemPrototype, qualityPrototype)
-		itemPrototype.icon = nil
-	end
-    return icons
+--- Updates the rendering of quality sprites for a player identified by their index.
+--- @param plant_index integer
+--- @param render_mode string
+function func.update_rendering(plant_index, render_mode)
+    storage.plants = storage.plants or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+
+    local plant = storage.plants[plant_index]
+    --plant = rendering.get_object_by_id(plant.id)
+
+    if next(storage.plants.always_render_to) == nil then
+        plant.visible = false
+    elseif render_mode == "sometimes" then
+        if func.tintable(plant.target.entity.name) == true then
+            plant.players = storage.plants.sometimes_render_to
+        else
+            plant.players = storage.plants.always_render_to
+        end
+        plant.visible = true
+    elseif render_mode == "always" then
+        plant.players = storage.plants.always_render_to
+        plant.visible = true
+    end
+    if not plant.players then 
+        plant.visible = false 
+    end
 end
 
+--- Updates the quality sprite rendering of all plants
+--- @param player_index integer
+function func.update_all_plants(player_index)
+    local value = settings.get_player_settings(player_index)["draw_quality_sprite"].value   --[[@as string]]
+    if value == "none" then
+        storage.plants.always_render_to[player_index] = nil
+        storage.plants.sometimes_render_to[player_index] = nil
+    elseif value == "sometimes" then
+        storage.plants.always_render_to[player_index] = player_index
+        storage.plants.sometimes_render_to[player_index] = nil
+    else-- value == "always"
+        storage.plants.always_render_to[player_index] = player_index
+        storage.plants.sometimes_render_to[player_index] = player_index
+    end
+    
+    for index, plant in pairs(storage.plants) do
+        if (index ~= "always_render_to") and (index ~= "sometimes_render_to") then 
+            func.update_rendering(index, value)
+        end
+    end
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- Generating Prototypes
 
 --- Generates the item prototype
 --- @param name any
@@ -191,7 +251,7 @@ end
 --- @param quality data.QualityPrototype
 --- @return data.PlantPrototype
 function func.generate_plant(plant, quality)
-    local newPlant = table.deepcopy(plant)
+    local newPlant = table.deepcopy(plant)  --[[@as data.PlantPrototype]]
     local quality_color = func.rgb_to_hex(quality.color)
     local quality_multiplier = 1 + quality.level * 0.3
 
@@ -216,10 +276,10 @@ function func.generate_plant(plant, quality)
 
     -- Attributes
     newPlant.order = newPlant.order and (newPlant.order..quality.level) or nil
-    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = func.mutiply_table(newPlant.max_health, settings.startup["max_health"].value) end
-    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * settings.startup["growth_ticks"].value end
-    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, settings.startup["harvest_emissions"].value ^ 2) end
-    if settings.startup["emmisions_per_second"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, settings.startup["emmisions_per_second"].value) end
+    if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = func.mutiply_table(newPlant.max_health, 1 + settings.startup["max_health"].value/100 * quality.level) end
+    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * 1 + settings.startup["growth_ticks"].value/100 * quality.level end
+    if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, 1 + settings.startup["harvest_emissions"].value/100 * quality.level) end
+    if settings.startup["emissions_per_second"].value and newPlant.emissions_per_second then newPlant.emissions_per_second = func.mutiply_table(newPlant.emissions_per_second, 1 + settings.startup["emissions_per_second"].value/100 * quality.level) end
 
     -- Mining Results
     newPlant.minable = func.updateMiningResults(newPlant, quality)
@@ -227,66 +287,7 @@ function func.generate_plant(plant, quality)
 end
 
 
---- Will return true if a plant is able to be tinted.
---- @param plant_name string
---- @return boolean
-function func.tintable(plant_name)
-    if settings.startup["tint_plants"].value == true then
-        if storage.tintable[plant_name] then return true end
-    end
-    return false
-end
 
-
---- Updates the rendering of quality sprites for a player identified by their index.
---- @param plant_index integer
---- @param render_mode string
-function func.update_rendering(plant_index, render_mode)
-    storage.plants = storage.plants or {}
-    storage.plants.always_render_to = storage.plants.always_render_to or {}
-    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
-
-    local plant = storage.plants[plant_index]
-    --plant = rendering.get_object_by_id(plant.id)
-
-    if next(storage.plants.always_render_to) == nil then
-        plant.visible = false
-    elseif render_mode == "sometimes" then
-        if func.tintable(plant.target.entity.name) == true then
-            plant.players = storage.plants.sometimes_render_to
-        else
-            plant.players = storage.plants.always_render_to
-        end
-        plant.visible = true
-    elseif render_mode == "always" then
-        plant.players = storage.plants.always_render_to
-        plant.visible = true
-    end
-    if not plant.players then 
-        plant.visible = false 
-    end
-end
-
-
-function func.update_all_plants(player_index)
-    local value = settings.get_player_settings(player_index)["draw_quality_sprite"].value
-    if value == "none" then
-        storage.plants.always_render_to[player_index] = nil
-        storage.plants.sometimes_render_to[player_index] = nil
-    elseif value == "sometimes" then
-        storage.plants.always_render_to[player_index] = player_index
-        storage.plants.sometimes_render_to[player_index] = nil
-    else-- value == "always"
-        storage.plants.always_render_to[player_index] = player_index
-        storage.plants.sometimes_render_to[player_index] = player_index
-    end
-    
-    for index, plant in pairs(storage.plants) do
-        if (index ~= "always_render_to") and (index ~= "sometimes_render_to") then 
-            func.update_rendering(index, value)
-        end
-    end
-end
 
 
 
