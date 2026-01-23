@@ -33,7 +33,22 @@ local function create_quality_sprite(plant, quality)
 end
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+local function ensure_storage()
+    storage.plants = storage.plants or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+	storage.tintable = {}
+	
+	local base_tintable = {"tree-plant", "yumako-tree", "jellystem"}
+	for i, plant_name in pairs(base_tintable) do
+		for j, quality_prototype in pairs(prototypes.quality) do
+			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = true end
+		end
+	end
+end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -93,23 +108,7 @@ local function runtime_setting_changed(event)
     --storage.plants.always_render_to =  {}
     --storage.plants.sometimes_render_to =  {}
 	if event.setting == "draw_quality_sprite" then
-		local value = settings.get_player_settings(event.player_index)["draw_quality_sprite"].value
-		if value == "none" then
-			storage.plants.always_render_to[event.player_index] = nil
-			storage.plants.sometimes_render_to[event.player_index] = nil
-		elseif value == "sometimes" then
-			storage.plants.always_render_to[event.player_index] = event.player_index
-			storage.plants.sometimes_render_to[event.player_index] = nil
-		else-- value == "always"
-			storage.plants.always_render_to[event.player_index] = event.player_index
-			storage.plants.sometimes_render_to[event.player_index] = event.player_index
-		end
-		
-		for index, plant in pairs(storage.plants) do
-        	if (index ~= "always_render_to") and (index ~= "sometimes_render_to") then 
-				func.update_rendering(index, value)
-			end
-		end
+		func.update_all_plants(event.player_index)
 	end
 end
 
@@ -163,6 +162,8 @@ script.on_event("on_script_trigger_effect", function(event)
 	end
 end)
 
+script.on_init(														ensure_storage)
+script.on_configuration_changed(									ensure_storage)
 
 script.on_event(defines.events.on_tower_planted_seed, 				on_planted)
 script.on_event(defines.events.on_built_entity,                 	on_planted, {{filter = "type", type = "plant"}})

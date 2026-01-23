@@ -231,12 +231,8 @@ end
 --- @param plant_name string
 --- @return boolean
 function func.tintable(plant_name)
-    if settings.startup["tint_plants"].value then
-        for i, j in pairs(prototypes.quality) do
-            if  (i.."-yumako-tree" == plant_name) or (i.."-jellystem" == plant_name) or (i.."-tree-plant" == plant_name) then 
-                return true
-            end
-        end
+    if settings.startup["tint_plants"].value == true then
+        if storage.tintable[plant_name] then return true end
     end
     return false
 end
@@ -255,8 +251,12 @@ function func.update_rendering(plant_index, render_mode)
 
     if next(storage.plants.always_render_to) == nil then
         plant.visible = false
-    elseif func.tintable(plant.target.entity.name) and (render_mode == "sometimes") then
-        plant.players = storage.plants.sometimes_render_to
+    elseif render_mode == "sometimes" then
+        if func.tintable(plant.target.entity.name) == true then
+            plant.players = storage.plants.sometimes_render_to
+        else
+            plant.players = storage.plants.always_render_to
+        end
         plant.visible = true
     elseif render_mode == "always" then
         plant.players = storage.plants.always_render_to
@@ -266,6 +266,28 @@ function func.update_rendering(plant_index, render_mode)
         plant.visible = false 
     end
 end
+
+
+function func.update_all_plants(player_index)
+    local value = settings.get_player_settings(player_index)["draw_quality_sprite"].value
+    if value == "none" then
+        storage.plants.always_render_to[player_index] = nil
+        storage.plants.sometimes_render_to[player_index] = nil
+    elseif value == "sometimes" then
+        storage.plants.always_render_to[player_index] = player_index
+        storage.plants.sometimes_render_to[player_index] = nil
+    else-- value == "always"
+        storage.plants.always_render_to[player_index] = player_index
+        storage.plants.sometimes_render_to[player_index] = player_index
+    end
+    
+    for index, plant in pairs(storage.plants) do
+        if (index ~= "always_render_to") and (index ~= "sometimes_render_to") then 
+            func.update_rendering(index, value)
+        end
+    end
+end
+
 
 
 return func
