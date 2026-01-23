@@ -2,15 +2,20 @@ local func = require("functions")
 
 ---@param plant LuaEntity?
 ---@param quality string
----@param render? boolean
-local function create_quality_sprite(plant, quality, render)
+local function create_quality_sprite(plant, quality)
 	storage.plants = storage.plants or {}
-	storage.plants.render_to = storage.plants.render_to or {}
-	render = render or true
+	storage.plants.always_render_to = storage.plants.always_render_to or {}
+	storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+
 	if plant == nil then log("Error drawing quality sprite. Plant was considered nil") return end
     local bb = plant.bounding_box
     local height = (bb.right_bottom.y - bb.left_top.y) / 2
 	local width = (bb.right_bottom.x - bb.left_top.x) / 2
+
+	local render_mode = storage.plants.always_render_to
+	if func.tintable(plant.name) then 
+		render_mode = storage.plants.sometimes_render_to
+	end
 	local info = {
 		sprite = "quality."..quality,
 		target = {entity = plant, offset = {-width * 0.8, height * 0.8}},
@@ -18,8 +23,9 @@ local function create_quality_sprite(plant, quality, render)
 		x_scale = 0.5,
 		y_scale = 0.5,
 		render_layer = "entity-info-icon",
-		players = storage.plants.render_to,
-		visible = true
+		players = render_mode,
+		visible = true,
+		only_in_alt_mode = true
 	}
 	if next(info.players) == nil then info.visible = false end
 	local render = rendering.draw_sprite(info)
@@ -66,39 +72,44 @@ local function on_planted(event)
 		if newPlant == nil then return end
 
 		storage.plants = storage.plants or {}
-		storage.plants.render_to = storage.plants.render_to or {}
+		storage.plants.always_render_to = storage.plants.always_render_to or {}
+		storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
 
 		-- Draw quality sprites 
-		--if settings.global["draw_quality_sprite"].value == "sometimes" then
-			
-
-		--storage.plants = storage.plants or {}
-		--if func.tintable(quality, newPlant.name) then
-		--	storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
-		--else
-		--	storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
-		--end
-		storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality, false)
+		storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality)
 	end
 end
 
 --- comment
 --- @param event EventData|EventData.on_runtime_mod_setting_changed
 local function runtime_setting_changed(event)
-	storage.plants = storage.plants or {}
-	storage.plants.render_to = storage.plants.render_to or {}
+    storage.plants = storage.plants or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+    storage.plants.render_to = nil
 
+    --storage.plants = {}
+    --storage.plants.render_to =  {}
+    --storage.plants.always_render_to =  {}
+    --storage.plants.sometimes_render_to =  {}
 	if event.setting == "draw_quality_sprite" then
 		local value = settings.get_player_settings(event.player_index)["draw_quality_sprite"].value
-		if value ~= "none" then
-			storage.plants.render_to[event.player_index] = event.player_index
-		else
-			for i, j in pairs(storage.plants.render_to) do
-				if j == event.player_index then storage.plants.render_to[i] = nil end
+		if value == "none" then
+			storage.plants.always_render_to[event.player_index] = nil
+			storage.plants.sometimes_render_to[event.player_index] = nil
+		elseif value == "sometimes" then
+			storage.plants.always_render_to[event.player_index] = event.player_index
+			storage.plants.sometimes_render_to[event.player_index] = nil
+		else-- value == "always"
+			storage.plants.always_render_to[event.player_index] = event.player_index
+			storage.plants.sometimes_render_to[event.player_index] = event.player_index
+		end
+		
+		for index, plant in pairs(storage.plants) do
+        	if (index ~= "always_render_to") and (index ~= "sometimes_render_to") then 
+				func.update_rendering(index, value)
 			end
 		end
-
-		func.update_rendering(event.player_index)
 	end
 end
 
@@ -107,7 +118,7 @@ local function on_object_destroyed(event)
     local registration_number = event.registration_number
     if storage.plants[registration_number] == nil then log("registration_number "..registration_number.." not found in storage.plants") return end
 
-	rendering.get_object_by_id(storage.plants[registration_number]).destroy()
+	storage.plants[registration_number].destroy()
 	storage.plants[registration_number] = nil
 end
 

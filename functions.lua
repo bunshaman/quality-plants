@@ -243,30 +243,27 @@ end
 
 
 --- Updates the rendering of quality sprites for a player identified by their index.
---- @param player_index integer
-function func.update_rendering(player_index)
+--- @param plant_index integer
+--- @param render_mode string
+function func.update_rendering(plant_index, render_mode)
     storage.plants = storage.plants or {}
-    storage.plants.render_to = storage.plants.render_to or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
 
-    local fullRender = settings.get_player_settings(player_index)["draw_quality_sprite"].value
-    if fullRender == "sometimes" then fullRender = false elseif fullRender == "always" then fullRender = true end
+    local plant = storage.plants[plant_index]
+    --plant = rendering.get_object_by_id(plant.id)
 
-    if next(storage.plants.render_to) == nil then
-        for i, j in pairs(storage.plants) do
-            if i ~= "render_to" then storage.plants[i].visible = false end
-        end
-    else
-        for i, j in pairs(storage.plants) do
-            if i ~= "render_to" then
-                if func.tintable(j.target.entity.name) and (fullRender == false) then
-                    storage.plants[i].players[player_index] = nil
-                    if next(storage.plants[i].players) == nil then storage.plants[i].visible = false end
-                else
-                    storage.plants[i].players = storage.plants.render_to
-                    storage.plants[i].visible = true
-                end
-            end
-        end
+    if next(storage.plants.always_render_to) == nil then
+        plant.visible = false
+    elseif func.tintable(plant.target.entity.name) and (render_mode == "sometimes") then
+        plant.players = storage.plants.sometimes_render_to
+        plant.visible = true
+    elseif render_mode == "always" then
+        plant.players = storage.plants.always_render_to
+        plant.visible = true
+    end
+    if not plant.players then 
+        plant.visible = false 
     end
 end
 
@@ -275,4 +272,12 @@ return func
 
 
 
---- Move render to into a different storage variable?
+--- Something is wrong with this block. Look into it tomorrow.
+--- ---            storage.plants[i].players[player_index] = nil
+--- ---            if next(storage.plants[i].players) == nil then storage.plants[i].visible = false end
+--- 
+                --- storage.plants[i].players = storage.plants.render_to
+                --- storage.plants[i].visible = true
+--- 
+--- dog idk anymore okay?
+--- plant is placed > no player index but need to render only to those who want to see it.
