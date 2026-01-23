@@ -1,28 +1,48 @@
 data:extend{
     {
-        type = "bool-setting",
-        name = "harvest_emissions",
-        setting_type = "startup",
-        default_value = true,
-        order = "a"
-    }, {
-        type = "bool-setting",
         name = "growth_ticks",
+        type = 'double-setting',
+        default_value = 30,
+        minimum_value = 0,
         setting_type = "startup",
-        default_value = true,
-        order = "b"
+        order = "aa",
     }, {
-        type = "bool-setting",
         name = "max_health",
+        type = 'double-setting',
+        default_value = 30,
+        minimum_value = 0,
         setting_type = "startup",
+        order = "ab"
+    }, {
+        name = "harvest_emissions",
+        type = 'double-setting',
+        default_value = 30,
+        minimum_value = 0,
+        setting_type = "startup",
+        order = "ac"
+    }, {
+        name = "emissions_per_second",
+        type = 'double-setting',
+        default_value = 30,
+        minimum_value = 0,
+        setting_type = "startup",
+        order = "ad"
+    }, {
+        name = "draw_quality_sprite",
+        type = "string-setting",
+        default_value = "always",
+        allowed_values = {
+            "none",
+            "sometimes",
+            "always"
+        },
+        setting_type = "runtime-per-user",
+        order = "ba"
+    }, {
+        name = "tint_plants",
+        type = 'bool-setting',
         default_value = true,
-        order = "c"
-    }, 
-    --{
-    --    type = "bool-setting",
-    --    name = "tint_plants",
-    --    setting_type = "startup",
-    --    default_value = false,
-    --    order = "d"
-    --}
+        setting_type = "startup",
+        order = "bb"
+    }
 }

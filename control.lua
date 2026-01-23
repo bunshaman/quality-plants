@@ -1,10 +1,23 @@
+local func = require("functions")
+
+local base_tintable = {"tree-plant", "yumako-tree", "jellystem"}
+
 ---@param plant LuaEntity?
 ---@param quality string
-function draw_quality_sprite(plant, quality)
+local function create_quality_sprite(plant, quality)
+	storage.plants = storage.plants or {}
+	storage.plants.always_render_to = storage.plants.always_render_to or {}
+	storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+
 	if plant == nil then log("Error drawing quality sprite. Plant was considered nil") return end
     local bb = plant.bounding_box
     local height = (bb.right_bottom.y - bb.left_top.y) / 2
 	local width = (bb.right_bottom.x - bb.left_top.x) / 2
+
+	local render_mode = storage.plants.always_render_to
+	if func.tintable(plant.name) then 
+		render_mode = storage.plants.sometimes_render_to
+	end
 	local info = {
 		sprite = "quality."..quality,
 		target = {entity = plant, offset = {-width * 0.8, height * 0.8}},
@@ -12,39 +25,47 @@ function draw_quality_sprite(plant, quality)
 		x_scale = 0.5,
 		y_scale = 0.5,
 		render_layer = "entity-info-icon",
+		players = render_mode,
+		visible = true,
+		only_in_alt_mode = true
 	}
+	if next(info.players) == nil then info.visible = false end
 	local render = rendering.draw_sprite(info)
 	return render
 end
 
 
---- ABANDONED unless there exists a way to get the mouse cursor position.
---- Draws a quality sprite upon the cursor when planting quality seeds manually
---- @param player LuaPlayer
---function draw_quality_on_mouse(player)
---	if not (player and player.valid == true) then return end
---	local cursor_stack = player.cursor_stack
---	if cursor_stack == nil or cursor_stack.valid == false then return end
---
---	if cursor_stack.valid_for_read then
---		local x = prototypes.item[cursor_stack.name].place_result.type
---		if not (prototypes.item[cursor_stack.name].place_result.type == "plant") then return end
---		rendering.draw_sprite{sprite = "quality."..cursor_stack.quality.name, target = player.hand_location, surface = player.physical_surface, x_scale = 0.5, y_scale = 0.5, time_to_live = 60}
---		game.print(player.cursor_stack)
---	else
---		-- delete rendering object.
---	end
---end
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+local function ensure_storage()
+    storage.plants = storage.plants or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+	storage.tintable = {}
+	
+	for i, plant_name in pairs(base_tintable) do
+		for j, quality_prototype in pairs(prototypes.quality) do
+			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = true end
+		end
+	end
+end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --- Called when a plant is planted
 --- @param event EventData|EventData.on_tower_planted_seed|EventData.on_built_entity|EventData.on_robot_built_entity|EventData.on_space_platform_built_entity
-function on_planted(event)
+local function on_planted(event)
 	local plant = event.entity or event.plant
-	local seed = event.seed.name or event.stack.name or event.consumed_items.get_contents() and event.consumed_items.get_contents()[1]
+	local seed = ""
+	if event.consumed_items then
+		local consumed = event.consumed_items.get_contents()
+		seed = consumed[1]
+	else
+		seed = event.seed.name or event.stack.name
+	end
+	--local seed = event.seed.name or event.stack.name or (event.consumed_items.get_contents() and event.consumed_items.get_contents()[1])
 	local quality = ""
 	if event.name == 6 then
 		quality = event.consumed_items.get_contents()[1].quality
@@ -64,8 +85,41 @@ function on_planted(event)
 			spill=false
 		}
 		plant.destroy()
-		draw_quality_sprite(newPlant, quality)
+		if newPlant == nil then return end
+
+		storage.plants = storage.plants or {}
+		storage.plants.always_render_to = storage.plants.always_render_to or {}
+		storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+
+		-- Draw quality sprites 
+		storage.plants[script.register_on_object_destroyed(newPlant)] = create_quality_sprite(newPlant, quality)
 	end
+end
+
+--- comment
+--- @param event EventData|EventData.on_runtime_mod_setting_changed
+local function runtime_setting_changed(event)
+    storage.plants = storage.plants or {}
+    storage.plants.always_render_to = storage.plants.always_render_to or {}
+    storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
+    storage.plants.render_to = nil
+
+    --storage.plants = {}
+    --storage.plants.render_to =  {}
+    --storage.plants.always_render_to =  {}
+    --storage.plants.sometimes_render_to =  {}
+	if event.setting == "draw_quality_sprite" then
+		func.update_all_plants(event.player_index)
+	end
+end
+
+
+local function on_object_destroyed(event)
+    local registration_number = event.registration_number
+    if storage.plants[registration_number] == nil then log("registration_number "..registration_number.." not found in storage.plants") return end
+
+	storage.plants[registration_number].destroy()
+	storage.plants[registration_number] = nil
 end
 
 
@@ -109,8 +163,13 @@ script.on_event("on_script_trigger_effect", function(event)
 	end
 end)
 
+script.on_init(														ensure_storage)
+script.on_configuration_changed(									ensure_storage)
 
 script.on_event(defines.events.on_tower_planted_seed, 				on_planted)
 script.on_event(defines.events.on_built_entity,                 	on_planted, {{filter = "type", type = "plant"}})
 script.on_event(defines.events.on_robot_built_entity,           	on_planted, {{filter = "type", type = "plant"}})
 script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{filter = "type", type = "plant"}})
+
+script.on_event(defines.events.on_runtime_mod_setting_changed,		runtime_setting_changed)
+script.on_event(defines.events.on_object_destroyed, 				on_object_destroyed)

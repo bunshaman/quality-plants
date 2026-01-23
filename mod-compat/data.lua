@@ -1,4 +1,4 @@
-local util = require("util")
+local func = require("functions")
 
 -- Generate all the prototypes
 local quality_tiers = table.deepcopy(data.raw["quality"])
@@ -30,7 +30,7 @@ if mods["Combo-Technology"] then
         local seedCrystal = table.deepcopy(data.raw["simple-entity"]["seed-crystal"])
         --seedCrystal.minable.result = quality_name.."-seed-crystal"
         if quality_name ~= "normal" then
-            local newSeedCrystal = util.generate_plant(seedCrystal, quality)
+            local newSeedCrystal = func.generate_plant(seedCrystal, quality)
             data:extend{newSeedCrystal}
             --seedCrystal.dying_trigger_effect.entity_name = quality_name.."-fulgurite-plant" 
             --seedCrystal.localised_name = {"", "[color=" .. util.rgb_to_hex(quality.color) .. "]", { "entity-name." .. seedCrystal.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}

@@ -1,4 +1,4 @@
-local util = require("util")
+local func = require("functions")
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -20,7 +20,10 @@ for _, quality in pairs(data.raw["quality"]) do
     if not (quality.name == "quality-unknown" or quality.name == "normal") then
         -- Generate the plant prototypes
         for _, plant in pairs(plants) do
-            local new_plant = util.generate_plant(plant, quality)
+            local new_plant = func.generate_plant(plant, quality)
+            if settings.startup["tint_plants"].value then
+                func.tint_plant(new_plant, quality)
+            end
             data:extend{new_plant}
         end
     end
