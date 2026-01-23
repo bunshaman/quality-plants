@@ -1,6 +1,5 @@
 local func = require("functions")
-
-local base_tintable = {"tree-plant", "yumako-tree", "jellystem"}
+require("mod-compat.control")
 
 ---@param plant LuaEntity?
 ---@param quality string
@@ -44,9 +43,9 @@ local function ensure_storage()
     storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
 	storage.tintable = {}
 	
-	for i, plant_name in pairs(base_tintable) do
+	for plant_name, _ in pairs(func.base_tintable) do
 		for j, quality_prototype in pairs(prototypes.quality) do
-			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = true end
+			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = plant_name end
 		end
 	end
 end

@@ -1,6 +1,11 @@
 local func = {}
 
 local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+func.base_tintable = {
+    ["tree-plant"] = "",  -- Left empty as there are tons of variations themselves and will be handled separately
+    ["yumako-tree"]= "__quality-plants__/plant/yumako-tree-harvest.png",
+    ["jellystem"]= "__quality-plants__/plant/jellystem-harvest.png",
+}
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -85,7 +90,8 @@ end
 --- @param plant data.PlantPrototype
 --- @param quality data.QualityPrototype
 function func.tint_plant(plant, quality)
-    if (quality.name.."-yumako-tree" == plant.name) or (quality.name.."-jellystem" == plant.name) or (quality.name.."-tree-plant" == plant.name) then
+    local gsub = string.gsub(plant.name, quality.name.."%-", "", 1)
+    if func.base_tintable[gsub] then
         local quality_color = {
             r = quality.color.r or quality.color[1],
             g = quality.color.g or quality.color[2],
@@ -109,13 +115,20 @@ function func.tint_plant(plant, quality)
         end
 
         for i, variation in pairs(plant.variations) do
-            if (quality.name.."-yumako-tree" == plant.name) then
-                variation.leaves.filename = "__quality-plants__/plant/yumako-tree-harvest.png"
-            elseif (quality.name.."-jellystem" == plant.name) then
-                variation.leaves.filename = "__quality-plants__/plant/jellystem-harvest.png"
-            elseif (quality.name.."-tree-plant" == plant.name) then
+            -- Hardcoding tree support as they are weird.
+            if (quality.name.."-tree-plant" == plant.name) then
                 variation.leaves.filename = "__quality-plants__/plant/tree-plant/tree-08-"..letters[i].."-leaves.png"
+            else
+                variation.leaves.filename = func.base_tintable[gsub] or variation.leaves.filename
             end
+
+            --- if (quality.name.."-yumako-tree" == plant.name) then
+            ---     variation.leaves.filename = "__quality-plants__/plant/yumako-tree-harvest.png"
+            --- elseif (quality.name.."-jellystem" == plant.name) then
+            ---     variation.leaves.filename = "__quality-plants__/plant/jellystem-harvest.png"
+            --- elseif (quality.name.."-boompuff-plant" == plant.name) then
+            ---     variation.leaves.filename = "__quality-plants__/plant/boompuff-harvest.png"
+            --- end
         end
     end
 end
@@ -196,6 +209,8 @@ function func.createMiningResult(name, quality)
     -- Hidden
     newResult.hidden = true
     newResult.hidden_in_factoriopedia = true
+    newResult.subgroup = "quality-plant-intermediate-spoils"
+    newResult.order = "zzzzzzzzzzzzzzzzzzzzzzzz"..newResult.name.."-"..quality.name
 
     newResult.localised_name = {"", "[color=" .. func.rgb_to_hex(quality.color) .. "]", { "item-name." .. newResult.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
     newResult.spoil_result = nil

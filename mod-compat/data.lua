@@ -5,6 +5,7 @@ local quality_tiers = table.deepcopy(data.raw["quality"])
 quality_tiers["quality-unknown"] = nil
 quality_tiers["normal"] = nil
 
+--- Combo Technolog
 if mods["Combo-Technology"] then
     local p = data.raw["plant"]
     local c = data.raw["plant"]["seed-crystal-plant"]
