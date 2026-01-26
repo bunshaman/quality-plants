@@ -38,5 +38,12 @@ data:extend({
         name = "quality-plant-intermediate-spoils",
         group = "other",
         order = "z"
+    },
+    {
+        type = "custom-input",
+        name = "pipette-mimic",
+        key_sequence = "",
+        linked_game_control = "pipette",
+        include_selected_prototype = true
     }
 })

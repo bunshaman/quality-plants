@@ -50,6 +50,39 @@ local function ensure_storage()
 	end
 end
 
+
+local function pipette_mimic(event)
+	if not event.selected_prototype then return end
+	if not (event.selected_prototype.derived_type == "plant") then return end
+
+	local selected_plant = prototypes.entity[event.selected_prototype.name]
+	local normal_plant = prototypes.entity[selected_plant.fast_replaceable_group]
+	local quality = ""
+	if selected_plant.name ~= selected_plant.fast_replaceable_group then
+		quality = selected_plant.name:sub(1, #selected_plant.name - #selected_plant.fast_replaceable_group - 1)
+	else
+		return
+	end
+
+	local seed = normal_plant.items_to_place_this[1]
+	local player = game.players[event.player_index]
+	if player.cursor_stack == nil then return end
+
+	-- gotta find if player has the correct seed in the inventory and then grab the index
+	local item_stack, index = player.get_main_inventory().find_item_stack({name = seed.name, quality = quality, count = seed.count})
+	if item_stack then
+		-- put item into cursor
+		game.print(index)
+		player.cursor_stack.swap_stack(item_stack)
+	else
+		-- put ghost item into cursor
+		--player.cursor_ghost.swap_stack({name = seed.name, quality = quality})
+	end
+
+
+
+	
+end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -162,6 +195,11 @@ script.on_event("on_script_trigger_effect", function(event)
 	end
 end)
 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 script.on_init(														ensure_storage)
 script.on_configuration_changed(									ensure_storage)
 
@@ -172,3 +210,5 @@ script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{f
 
 script.on_event(defines.events.on_runtime_mod_setting_changed,		runtime_setting_changed)
 script.on_event(defines.events.on_object_destroyed, 				on_object_destroyed)
+
+script.on_event("pipette-mimic",									pipette_mimic)

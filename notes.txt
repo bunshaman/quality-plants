@@ -1,0 +1,4 @@
+--- When settings are changed, all plants need to be updated.
+    --- linked_game_control: pippette
+    
+--- Add a shortcut with same keys as pippette to raise an event?

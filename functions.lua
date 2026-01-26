@@ -211,6 +211,7 @@ function func.createMiningResult(name, quality)
     newResult.hidden_in_factoriopedia = true
     newResult.subgroup = "quality-plant-intermediate-spoils"
     newResult.order = "zzzzzzzzzzzzzzzzzzzzzzzz"..newResult.name.."-"..quality.name
+    newResult.place_result = nil
 
     newResult.localised_name = {"", "[color=" .. func.rgb_to_hex(quality.color) .. "]", { "item-name." .. newResult.name }, " (", {"quality-name." .. quality.name }, ")", "[/color]"}
     newResult.spoil_result = nil
