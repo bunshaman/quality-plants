@@ -63,20 +63,26 @@ local function pipette_mimic(event)
 	else
 		return
 	end
-
-	local seed = normal_plant.items_to_place_this[1]
+	
 	local player = game.players[event.player_index]
 	if player.cursor_stack == nil then return end
+	local seed = normal_plant.items_to_place_this[1]
+	local pick_sound = "item-pick/"..seed.name
+	local drop_sound = "item-move/"..seed.name
+	
 
 	-- gotta find if player has the correct seed in the inventory and then grab the index
+	local cursor = player.cursor_stack
 	local item_stack, index = player.get_main_inventory().find_item_stack({name = seed.name, quality = quality, count = seed.count})
 	if item_stack then
 		-- put item into cursor
-		game.print(index)
 		player.cursor_stack.swap_stack(item_stack)
-	else
+		if helpers.is_valid_sound_path(pick_sound) then player.play_sound({path = pick_sound}) end
+	elseif player.cursor_ghost == nil then
 		-- put ghost item into cursor
-		--player.cursor_ghost.swap_stack({name = seed.name, quality = quality})
+		player.cursor_stack.swap_stack(item_stack)
+		player.cursor_ghost= {name = seed.name, quality = quality}
+		if helpers.is_valid_sound_path("utility/smart_pipette") then player.play_sound({path = "utility/smart_pipette"}) end
 	end
 
 
@@ -211,4 +217,4 @@ script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{f
 script.on_event(defines.events.on_runtime_mod_setting_changed,		runtime_setting_changed)
 script.on_event(defines.events.on_object_destroyed, 				on_object_destroyed)
 
-script.on_event("pipette-mimic",									pipette_mimic)
+script.on_event("plants-pipette-used",									pipette_mimic)

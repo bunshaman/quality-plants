@@ -41,7 +41,7 @@ data:extend({
     },
     {
         type = "custom-input",
-        name = "pipette-mimic",
+        name = "plants-pipette-used",
         key_sequence = "",
         linked_game_control = "pipette",
         include_selected_prototype = true
