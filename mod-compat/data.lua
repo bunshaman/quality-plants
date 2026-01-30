@@ -5,6 +5,7 @@ local quality_tiers = table.deepcopy(data.raw["quality"])
 quality_tiers["quality-unknown"] = nil
 quality_tiers["normal"] = nil
 
+--- Combo Technolog
 if mods["Combo-Technology"] then
     local p = data.raw["plant"]
     local c = data.raw["plant"]["seed-crystal-plant"]
@@ -48,3 +49,6 @@ if mods["Combo-Technology"] then
         data.raw["plant"][quality_name.."-seed-crystal-plant"].created_effect.action_delivery.source_effects[2].entity_name = quality_name.."-seed-crystal"
     end
 end
+
+
+--- explosion damage scales?

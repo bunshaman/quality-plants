@@ -1,6 +1,5 @@
 local func = require("functions")
-
-local base_tintable = {"tree-plant", "yumako-tree", "jellystem"}
+require("mod-compat.control")
 
 ---@param plant LuaEntity?
 ---@param quality string
@@ -44,13 +43,49 @@ local function ensure_storage()
     storage.plants.sometimes_render_to = storage.plants.sometimes_render_to or {}
 	storage.tintable = {}
 	
-	for i, plant_name in pairs(base_tintable) do
+	for plant_name, _ in pairs(func.base_tintable) do
 		for j, quality_prototype in pairs(prototypes.quality) do
-			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = true end
+			if not (quality_prototype.name == "quality-unknown") then storage.tintable[quality_prototype.name.."-"..plant_name] = plant_name end
 		end
 	end
 end
 
+
+local function pipette_mimic(event)
+	if not event.selected_prototype then return end
+	if not (event.selected_prototype.derived_type == "plant") then return end
+
+	local selected_plant = prototypes.entity[event.selected_prototype.name]
+	local normal_plant = prototypes.entity[selected_plant.fast_replaceable_group]
+	local quality = ""
+	if selected_plant.name ~= selected_plant.fast_replaceable_group then
+		quality = selected_plant.name:sub(1, #selected_plant.name - #selected_plant.fast_replaceable_group - 1)
+	else
+		return
+	end
+	
+	local player = game.players[event.player_index]
+	if player.cursor_stack == nil then return end
+	local seed = normal_plant.items_to_place_this[1]
+	local pick_sound = "item-pick/"..seed.name
+	local drop_sound = "item-move/"..seed.name
+	
+	-- gotta find if player has the correct seed in the inventory and then grab the index
+	local cursor = player.cursor_stack
+	local item_stack, index = player.get_main_inventory().find_item_stack({name = seed.name, quality = quality, count = seed.count})
+	if cursor and (cursor.valid_for_read == true) then return end
+	if item_stack then							-- If the player has seeds in their inventory somewhere
+		--game.print("Seed found in main inventory", {volume_modifier = 0})
+		-- put item from inventory into cursor
+		player.cursor_stack.swap_stack(item_stack)
+		if helpers.is_valid_sound_path(pick_sound) then player.play_sound({path = pick_sound}) end
+	else
+		-- game.print("No seed found in main inventory", {volume_modifier = 0})
+		-- put ghost item into cursor
+		player.cursor_ghost= {name = seed.name, quality = quality}
+		if helpers.is_valid_sound_path("utility/smart_pipette") then player.play_sound({path = "utility/smart_pipette"}) end
+	end
+end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -163,6 +198,11 @@ script.on_event("on_script_trigger_effect", function(event)
 	end
 end)
 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 script.on_init(														ensure_storage)
 script.on_configuration_changed(									ensure_storage)
 
@@ -173,3 +213,5 @@ script.on_event(defines.events.on_space_platform_built_entity,  	on_planted, {{f
 
 script.on_event(defines.events.on_runtime_mod_setting_changed,		runtime_setting_changed)
 script.on_event(defines.events.on_object_destroyed, 				on_object_destroyed)
+
+script.on_event("plants-pipette-used",									pipette_mimic)
