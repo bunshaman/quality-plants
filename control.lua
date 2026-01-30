@@ -70,24 +70,21 @@ local function pipette_mimic(event)
 	local pick_sound = "item-pick/"..seed.name
 	local drop_sound = "item-move/"..seed.name
 	
-
 	-- gotta find if player has the correct seed in the inventory and then grab the index
 	local cursor = player.cursor_stack
 	local item_stack, index = player.get_main_inventory().find_item_stack({name = seed.name, quality = quality, count = seed.count})
-	if item_stack then
-		-- put item into cursor
+	if cursor and (cursor.valid_for_read == true) then return end
+	if item_stack then							-- If the player has seeds in their inventory somewhere
+		--game.print("Seed found in main inventory", {volume_modifier = 0})
+		-- put item from inventory into cursor
 		player.cursor_stack.swap_stack(item_stack)
 		if helpers.is_valid_sound_path(pick_sound) then player.play_sound({path = pick_sound}) end
-	elseif player.cursor_ghost == nil then
+	else
+		-- game.print("No seed found in main inventory", {volume_modifier = 0})
 		-- put ghost item into cursor
-		player.cursor_stack.swap_stack(item_stack)
 		player.cursor_ghost= {name = seed.name, quality = quality}
 		if helpers.is_valid_sound_path("utility/smart_pipette") then player.play_sound({path = "utility/smart_pipette"}) end
 	end
-
-
-
-	
 end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

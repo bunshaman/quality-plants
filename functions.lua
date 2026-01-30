@@ -298,7 +298,7 @@ function func.generate_plant(plant, quality)
     if settings.startup["emissions_per_second"].value and newPlant.emissions_per_second then newPlant.emissions_per_second = func.mutiply_table(newPlant.emissions_per_second, 1 + settings.startup["emissions_per_second"].value/100 * quality.level) end
 
     -- Mining Results
-    newPlant.minable = func.updateMiningResults(newPlant, quality)
+    newPlant.minable = func.updateMiningResults(newPlant, quality)  --[[@as data.MinableProperties]]
     return newPlant
 end
 

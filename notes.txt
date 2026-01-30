@@ -1,3 +1,0 @@
---- When settings are changed, all plants need to be updated.
-
---- Main stuff works. Need to tidy up and account for edge cases so nothing is deleted.
