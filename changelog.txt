@@ -5,9 +5,10 @@ Date: 1 / 22 / 2026
     - Fixed a crash with pipetting while in map view
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.1
-Date: 1 / 22 / 2026
+Date: 1 / 30 / 2026
   Changes:
     - While in editor mode, all intermediate spoil results are moved into the bottom of unsorted tab to cause less clutter.
+    - Using the 'pipette' on a quality plant will now insert the quality seeds into your hand
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
 Date: 1 / 22 / 2026
