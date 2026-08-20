@@ -114,12 +114,43 @@ function func.tint_plant(plant, quality)
             end
         end
 
+        plant.growth_mounds = {}
         for i, variation in pairs(plant.variations) do
             -- Hardcoding tree support as they are weird.
             if (quality.name.."-tree-plant" == plant.name) then
-                variation.leaves.filename = "__quality-plants__/plant/tree-plant/tree-08-"..letters[i].."-leaves.png"
+                variation.leaves.filenames[1] = "__quality-plants__/plant/planted-tree/planted-tree-harvest.png"
+                variation.leaves.filenames[2] = "__quality-plants__/plant/planted-tree/planted-tree-harvest-2.png"
+                variation.leaves.filenames[3] = "__quality-plants__/plant/planted-tree/planted-tree-harvest-3.png"
+                plant.growth_mounds[i] = {
+                    filename = "__quality-plants__/plant/planted-tree/planted-tree-mound.png", 
+                    x = 0, 
+                    y = 0, 
+                    width = 100, 
+                    height = 75, 
+                    scale = 0.429, 
+                    tint = {
+                        r = (quality_color.r),
+                        g = (quality_color.g),
+                        b = (quality_color.b),
+                    }
+                }
+                --- New tree sprites... 
             else
-                variation.leaves.filename = func.base_tintable[gsub] or variation.leaves.filename
+                variation.leaves.filenames[1] = func.base_tintable[gsub] or variation.leaves.filenames[1]
+                plant.growth_mounds[i] = {
+                    filename = "__quality-plants__/plant/"..gsub.."-mound.png", 
+                    x = 0, 
+                    y = 0, 
+                    width = 100, 
+                    height = 75, 
+                    scale = 0.429,
+                    tint = {
+                        r = (quality_color.r),
+                        g = (quality_color.g),
+                        b = (quality_color.b),
+                    }
+                }
+                local x = 1
             end
 
             --- if (quality.name.."-yumako-tree" == plant.name) then
@@ -293,7 +324,7 @@ function func.generate_plant(plant, quality)
     -- Attributes
     newPlant.order = newPlant.order and (newPlant.order..quality.level) or nil
     if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = func.mutiply_table(newPlant.max_health, 1 + settings.startup["max_health"].value/100 * quality.level) end
-    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * 1 + settings.startup["growth_ticks"].value/100 * quality.level end
+    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * (1 + settings.startup["growth_ticks"].value/100 * quality.level) end
     if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, 1 + settings.startup["harvest_emissions"].value/100 * quality.level) end
     if settings.startup["emissions_per_second"].value and newPlant.emissions_per_second then newPlant.emissions_per_second = func.mutiply_table(newPlant.emissions_per_second, 1 + settings.startup["emissions_per_second"].value/100 * quality.level) end
 

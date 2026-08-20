@@ -1,8 +1,8 @@
 
 {
   "name": "quality-plants",
-  "version": "2.1.2",
-  "factorio_version": "2.0",
+  "version": "2.1.4",
+  "factorio_version": "2.1",
   "title": "Farm Quality Plants",
   "author": "Bunshaman",
   "homepage": "https://mods.factorio.com/user/bunshaman",
@@ -13,5 +13,5 @@
     "(?) infinite-quality-tiers",
     "(?) unlimited-quality",
     "(?) Combo-Technology"],
-  "description": "Planting quality seeds will now yield quality plants! \n Needs experimental version 2.0.61!"
+  "description": "Now on 2.1! Planting quality seeds will now yield quality plants!"
 }

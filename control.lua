@@ -113,9 +113,8 @@ local function on_planted(event)
 
 		local newPlant = plant.surface.create_entity{
 			name = quality.."-"..plant.name,
-			position = plant.position,
+			position = plant.position, --{"-5", "-5"},
 			force = plant.force,
-			fast_replace = true,
 			snap_to_grid = false,
 			spill=false
 		}
