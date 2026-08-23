@@ -324,7 +324,7 @@ function func.generate_plant(plant, quality)
     -- Attributes
     newPlant.order = newPlant.order and (newPlant.order..quality.level) or nil
     if settings.startup["max_health"].value and newPlant.max_health then newPlant.max_health = func.mutiply_table(newPlant.max_health, 1 + settings.startup["max_health"].value/100 * quality.level) end
-    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = newPlant.growth_ticks * (1 + settings.startup["growth_ticks"].value/100 * quality.level) end
+    if settings.startup["growth_ticks"].value and newPlant.growth_ticks then newPlant.growth_ticks = math.max(newPlant.growth_ticks * (1 + settings.startup["growth_ticks"].value/100 * quality.level), 1) end
     if settings.startup["harvest_emissions"].value and newPlant.harvest_emissions then newPlant.harvest_emissions = func.mutiply_table(newPlant.harvest_emissions, 1 + settings.startup["harvest_emissions"].value/100 * quality.level) end
     if settings.startup["emissions_per_second"].value and newPlant.emissions_per_second then newPlant.emissions_per_second = func.mutiply_table(newPlant.emissions_per_second, 1 + settings.startup["emissions_per_second"].value/100 * quality.level) end
 

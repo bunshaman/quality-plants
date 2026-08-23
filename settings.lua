@@ -3,7 +3,6 @@ data:extend{
         name = "growth_ticks",
         type = 'double-setting',
         default_value = 30,
-        minimum_value = 0,
         setting_type = "startup",
         order = "aa",
     }, {
