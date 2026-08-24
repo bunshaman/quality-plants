@@ -2,6 +2,9 @@
 Version: 2.1.5
 Date: 8 / 23 / 2026
   Changes:
+    - Renamed to "Quality Farming"
+    - Growth time can now be affected by quality in a positive manner
+    - New thumbnail
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.4
 Date: 8 / 18 / 2026
