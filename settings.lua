@@ -42,6 +42,15 @@ data:extend{
         type = 'bool-setting',
         default_value = true,
         setting_type = "startup",
-        order = "bb"
-    }
+        order = "ca"
+    }, 
+    --{
+    --    name = "tint_strength",
+    --    type = 'double-setting',
+    --    default_value = 1,
+    --    minimum_value = 0,
+    --    maximum_value = 1,
+    --    setting_type = "startup",
+    --    order = "cb"
+    --}
 }

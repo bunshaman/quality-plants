@@ -2,9 +2,9 @@ local func = {}
 
 local letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 func.base_tintable = {
-    ["tree-plant"] = "",  -- Left empty as there are tons of variations themselves and will be handled separately
-    ["yumako-tree"]= "__quality-plants__/plant/yumako-tree-harvest.png",
-    ["jellystem"]= "__quality-plants__/plant/jellystem-harvest.png",
+    ["tree-plant"] = {filepath = "", tint = {r = 0.5176, g = 0.6471, b = 0.4588}},  -- Left empty as there are tons of variations themselves and will be handled separately
+    ["yumako-tree"]= {filepath = "__quality-plants__/plant/yumako-tree-harvest.png", tint = {r = 0.7373, g = 0.2706, b = 0.1961}},
+    ["jellystem"]= {filepath = "__quality-plants__/plant/jellystem-harvest.png", tint = {r = 0.7254, g = 0.6549, b = 0.5804}}
 }
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ function func.tint_plant(plant, quality)
             b = quality.color.b or quality.color[3]
         }
         
-        if (quality_color.r > 1) and (quality_color.g > 1) and (quality_color.b > 1) then
+        if (quality_color.r > 1) or (quality_color.g > 1) or (quality_color.b > 1) then
             quality_color.r = quality_color.r / (255)
             quality_color.g = quality_color.g / (255)
             quality_color.b = quality_color.b / (255)
@@ -106,11 +106,33 @@ function func.tint_plant(plant, quality)
 
         if plant.colors then
             for i, table in pairs(plant.colors) do    -- this table could be empty
+                --plant.colors[i] = {
+                --    r = (quality_color.r),
+                --    g = (quality_color.g),
+                --    b = (quality_color.b),
+                --}
+
                 plant.colors[i] = {
-                    r = (quality_color.r),
-                    g = (quality_color.g),
-                    b = (quality_color.b),
+                    r = (func.base_tintable[gsub].tint.r) ^ (1/3) * ( 1 - .75) + quality_color.r * .75, --(quality_color.r),
+                    g = (func.base_tintable[gsub].tint.g) ^ (1/3) * ( 1 - .75) + quality_color.g * .75, --(quality_color.g),
+                    b = (func.base_tintable[gsub].tint.b) ^ (1/3) * ( 1 - .75) + quality_color.b * .75 --(quality_color.b),
                 }
+
+                -- wip
+                --if func.base_tintable[gsub] then
+                --    -- modify the colors
+                --    plant.colors[i] = {
+                --        r = (func.base_tintable[gsub].tint.r) ^ (1/3) * ( 1 - settings.startup["tint_strength"].value) + quality_color.r * settings.startup["tint_strength"].value, --(quality_color.r),
+                --        g = (func.base_tintable[gsub].tint.g) ^ (1/3) * ( 1 - settings.startup["tint_strength"].value) + quality_color.g * settings.startup["tint_strength"].value, --(quality_color.g),
+                --        b = (func.base_tintable[gsub].tint.b) ^ (1/3) * ( 1 - settings.startup["tint_strength"].value) + quality_color.b * settings.startup["tint_strength"].value --(quality_color.b),
+                --    }
+                --else
+                --    plant.colors[i] = {
+                --        r = (quality_color.r),
+                --        g = (quality_color.g),
+                --        b = (quality_color.b),
+                --    }
+                --end
             end
         end
 
@@ -136,7 +158,7 @@ function func.tint_plant(plant, quality)
                 }
                 --- New tree sprites... 
             else
-                variation.leaves.filenames[1] = func.base_tintable[gsub] or variation.leaves.filenames[1]
+                variation.leaves.filenames[1] = func.base_tintable[gsub]["filepath"] or variation.leaves.filenames[1]
                 plant.growth_mounds[i] = {
                     filename = "__quality-plants__/plant/"..gsub.."-mound.png", 
                     x = 0, 
@@ -144,7 +166,7 @@ function func.tint_plant(plant, quality)
                     width = 100, 
                     height = 75, 
                     scale = 0.429,
-                    tint = {
+                    tint = { 
                         r = (quality_color.r),
                         g = (quality_color.g),
                         b = (quality_color.b),
@@ -332,22 +354,4 @@ function func.generate_plant(plant, quality)
     newPlant.minable = func.updateMiningResults(newPlant, quality)  --[[@as data.MinableProperties]]
     return newPlant
 end
-
-
-
-
-
-
 return func
-
-
-
---- Something is wrong with this block. Look into it tomorrow.
---- ---            storage.plants[i].players[player_index] = nil
---- ---            if next(storage.plants[i].players) == nil then storage.plants[i].visible = false end
---- 
-                --- storage.plants[i].players = storage.plants.render_to
-                --- storage.plants[i].visible = true
---- 
---- dog idk anymore okay?
---- plant is placed > no player index but need to render only to those who want to see it.
